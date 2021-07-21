@@ -6,6 +6,7 @@ import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.item.convertClientSlotToServerSlot
 import net.minecraft.client.gui.screen.ingame.InventoryScreen
 import net.minecraft.item.Items
+import net.minecraft.item.MushroomStewItem
 import net.minecraft.network.packet.c2s.play.*
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.Hand
@@ -18,11 +19,11 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
     val repeatable = repeatable {
         val hotBarSlot = (0..8).firstOrNull {
-            player.inventory.getStack(it).item == Items.MUSHROOM_STEM
+            player.inventory.getStack(it).item is MushroomStewItem
         }
 
         val invSlot = (0..40).find {
-            !player.inventory.isEmpty && player.inventory.getStack(it).item == Items.MUSHROOM_STEM
+            !player.inventory.isEmpty && player.inventory.getStack(it).item is MushroomStewItem
         }
 
         if (hotBarSlot == null && invSlot == null) {
