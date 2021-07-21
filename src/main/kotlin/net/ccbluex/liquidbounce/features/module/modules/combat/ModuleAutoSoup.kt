@@ -60,20 +60,18 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
                     network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
                 }
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
-                if (player.inventory.getStack(hotBarSlot).item == Items.BOWL) {
-                    // If the user chose the Drop mode
-                    if (bowl == BowlMode.DROP) {
-                        network.sendPacket(
-                            PlayerActionC2SPacket(
-                                PlayerActionC2SPacket.Action.DROP_ITEM,
-                                BlockPos.ORIGIN,
-                                Direction.DOWN
-                            )
+                // If the user chose the Drop mode
+                if (bowl == BowlMode.DROP) {
+                    network.sendPacket(
+                        PlayerActionC2SPacket(
+                            PlayerActionC2SPacket.Action.DROP_ITEM,
+                            BlockPos.ORIGIN,
+                            Direction.DOWN
                         )
-                    } else {
-                        // If the user chose the Move mode
-                        utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
-                    }
+                    )
+                } else {
+                    // If the user chose the Move mode
+                    utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
                 }
                 if (hotBarSlot != player.inventory.selectedSlot) {
                     network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
