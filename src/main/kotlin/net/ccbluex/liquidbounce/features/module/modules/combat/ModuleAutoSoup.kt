@@ -43,7 +43,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
                 network.sendPacket(PlayerActionC2SPacket(PlayerActionC2SPacket.Action.DROP_ITEM, BlockPos.ORIGIN, Direction.DOWN))
 
-                if (player.inventory.getStack(hotBarSlot).isEmpty) {
+                if (player.inventory.getStack(hotBarSlot).item == Items.BOWL) {
                     if (hotBarSlot != player.inventory.selectedSlot) {
                         network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
                     }
