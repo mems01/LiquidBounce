@@ -18,7 +18,6 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.config.NamedChoice
 import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
@@ -33,8 +32,6 @@ import net.minecraft.util.math.Direction
 
 object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
-
-    private val bowl by enumChoice("Bowl", BowlMode.DROP, BowlMode.values())
     val health by int("Health", 18, 1..20)
 
     val repeatable = repeatable {
@@ -56,51 +53,28 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                if (hotBarSlot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
-                }
+                val serverSlot = convertClientSlotToServerSlot(hotBarSlot)
+                network.sendPacket(UpdateSelectedSlotC2SPacket(serverSlot))
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
-                // If the user chose the Drop mode
-                if (bowl == BowlMode.DROP) {
-                    network.sendPacket(
-                        PlayerActionC2SPacket(
-                            PlayerActionC2SPacket.Action.DROP_ITEM,
-                            BlockPos.ORIGIN,
-                            Direction.DOWN
-                        )
-                    )
-                } else {
-                    // If the user chose the Move mode
-                    utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
-                }
-                if (hotBarSlot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
-                }
+                network.sendPacket(PlayerActionC2SPacket(PlayerActionC2SPacket.Action.DROP_ITEM, BlockPos.ORIGIN, Direction.DOWN))
+                network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
             } else {
-                // Drag the item from the inventory slot to the hotbar slot
-                utilizeInventory(invSlot!!, 0, SlotActionType.QUICK_MOVE)
+                val serverSlot = convertClientSlotToServerSlot(invSlot!!)
+
+                val openInventory = mc.currentScreen !is InventoryScreen
+
+                if (openInventory) {
+                    network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.OPEN_INVENTORY))
+                }
+
+                interaction.clickSlot(0, serverSlot, 0, SlotActionType.QUICK_MOVE, player)
+
+                if (openInventory) {
+                    network.sendPacket(CloseHandledScreenC2SPacket(0))
+                }
+
                 return@repeatable
             }
         }
-    }
-
-    fun utilizeInventory(slot: Int, button: Int, slotActionType: SlotActionType) {
-        val serverSlot = convertClientSlotToServerSlot(slot)
-
-        val openInventory = mc.currentScreen !is InventoryScreen
-
-        if (openInventory) {
-            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.OPEN_INVENTORY))
-        }
-
-        interaction.clickSlot(0, serverSlot, button, slotActionType, player)
-
-        if (openInventory) {
-            network.sendPacket(CloseHandledScreenC2SPacket(0))
-        }
-    }
-
-    private enum class BowlMode(override val choiceName: String) : NamedChoice {
-        DROP("Drop"), MOVE("Move")
     }
 }
