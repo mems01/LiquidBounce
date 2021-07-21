@@ -55,8 +55,16 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
             if (hotBarSlot != null) {
                 network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
-                network.sendPacket(PlayerActionC2SPacket(PlayerActionC2SPacket.Action.DROP_ITEM, BlockPos.ORIGIN, Direction.DOWN))
-                network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                if (player.inventory.getStack(hotBarSlot).item != Items.MUSHROOM_STEW) {
+                    network.sendPacket(
+                        PlayerActionC2SPacket(
+                            PlayerActionC2SPacket.Action.DROP_ITEM,
+                            BlockPos.ORIGIN,
+                            Direction.DOWN
+                        )
+                    )
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                }
             } else {
                 val serverSlot = convertClientSlotToServerSlot(invSlot!!)
 
