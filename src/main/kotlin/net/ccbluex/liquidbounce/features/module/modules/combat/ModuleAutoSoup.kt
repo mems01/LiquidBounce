@@ -55,7 +55,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
             if (hotBarSlot != null) {
                 network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
-                if (player.inventory.getStack(hotBarSlot).item != Items.MUSHROOM_STEW) {
+                if (player.inventory.getStack(hotBarSlot).item == Items.BOWL) {
                     network.sendPacket(
                         PlayerActionC2SPacket(
                             PlayerActionC2SPacket.Action.DROP_ITEM,
