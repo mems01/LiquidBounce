@@ -23,7 +23,7 @@ import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.item.convertClientSlotToServerSlot
 import net.minecraft.client.gui.screen.ingame.InventoryScreen
-import net.minecraft.item.Items
+import net.minecraft.item.MushroomStewItem
 import net.minecraft.network.packet.c2s.play.*
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.Hand
@@ -36,11 +36,11 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
     val repeatable = repeatable {
         val hotBarSlot = (0..8).firstOrNull {
-            player.inventory.getStack(it).item == Items.MUSHROOM_STEW
+            player.inventory.getStack(it).item is MushroomStewItem
         }
 
         val invSlot = (0..40).find {
-            !player.inventory.isEmpty && player.inventory.getStack(it).item == Items.MUSHROOM_STEW
+            !player.inventory.isEmpty && player.inventory.getStack(it).item is MushroomStewItem
         }
 
         if (hotBarSlot == null && invSlot == null) {
@@ -53,8 +53,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                val serverSlot = convertClientSlotToServerSlot(hotBarSlot)
-                network.sendPacket(UpdateSelectedSlotC2SPacket(serverSlot))
+                network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
                 network.sendPacket(PlayerActionC2SPacket(PlayerActionC2SPacket.Action.DROP_ITEM, BlockPos.ORIGIN, Direction.DOWN))
                 network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
