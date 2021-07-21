@@ -77,45 +77,44 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
         } ?: return@repeatable
 
         for (enemy in targetTracker.enemies()) {
-            if (player.distanceTo(enemy) > range) {
-                return@repeatable
-            }
+            if (player.distanceTo(enemy) >= range - 1) {
 
-            updateTarget()
-            val curr = currentBlock ?: return@repeatable
-            val serverRotation = RotationManager.serverRotation ?: return@repeatable
+                updateTarget()
+                val curr = currentBlock ?: return@repeatable
+                val serverRotation = RotationManager.serverRotation ?: return@repeatable
 
-            val rayTraceResult = raytraceBlock(
-                range.toDouble(),
-                serverRotation,
-                curr,
-                curr.getState() ?: return@repeatable
-            )
+                val rayTraceResult = raytraceBlock(
+                    range.toDouble(),
+                    serverRotation,
+                    curr,
+                    curr.getState() ?: return@repeatable
+                )
 
-            if (rayTraceResult?.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr) {
-                return@repeatable
-            }
-
-            if (slot != player.inventory.selectedSlot) {
-                network.sendPacket(UpdateSelectedSlotC2SPacket(slot))
-            }
-
-            if (interaction.interactBlock(
-                    player,
-                    world,
-                    Hand.MAIN_HAND,
-                    rayTraceResult
-                ) == ActionResult.SUCCESS
-            ) {
-                if (swing) {
-                    player.swingHand(Hand.MAIN_HAND)
-                } else {
-                    network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
+                if (rayTraceResult?.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr) {
+                    return@repeatable
                 }
-            }
 
-            if (slot != player.inventory.selectedSlot) {
-                network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                if (slot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(slot))
+                }
+
+                if (interaction.interactBlock(
+                        player,
+                        world,
+                        Hand.MAIN_HAND,
+                        rayTraceResult
+                    ) == ActionResult.SUCCESS
+                ) {
+                    if (swing) {
+                        player.swingHand(Hand.MAIN_HAND)
+                    } else {
+                        network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
+                    }
+                }
+
+                if (slot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                }
             }
 
             destroy()

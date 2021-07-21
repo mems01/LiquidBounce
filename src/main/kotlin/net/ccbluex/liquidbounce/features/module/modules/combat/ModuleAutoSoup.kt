@@ -53,10 +53,14 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
+                if (hotBarSlot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
+                }
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
                 network.sendPacket(PlayerActionC2SPacket(PlayerActionC2SPacket.Action.DROP_ITEM, BlockPos.ORIGIN, Direction.DOWN))
-                network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                if (hotBarSlot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                }
             } else {
                 val serverSlot = convertClientSlotToServerSlot(invSlot!!)
 
