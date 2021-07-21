@@ -35,7 +35,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
+                network.sendPacket(UpdateSelectedSlotC2SPacket(convertClientSlotToServerSlot(hotBarSlot)))
                 interaction.interactItem(player, world, Hand.MAIN_HAND)
                 network.sendPacket(
                     PlayerActionC2SPacket(
