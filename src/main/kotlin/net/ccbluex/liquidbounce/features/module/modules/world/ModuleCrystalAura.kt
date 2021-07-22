@@ -77,7 +77,7 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
         val rangeSquared = range * range
 
         for (enemy in targetTracker.enemies()) {
-            if (player.distanceTo(enemy) > rangeSquared) {
+            if (player.squaredBoxedDistanceTo(enemy) > rangeSquared) {
                 return@repeatable
             }
 
