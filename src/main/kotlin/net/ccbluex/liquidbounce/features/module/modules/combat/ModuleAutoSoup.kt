@@ -78,36 +78,19 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
 
-                // Check if there is an empty bowl in hotbar
                 if (bowlSlot != null) {
-                    chat("is there if so there $bowlSlot")
-                    // Drop the bowl
-                    if (bowl == BowlMode.DROP) {
-                        if (bowlSlot == hotBarSlot) {
-                            chat("cant drop lol but invslot is $bowlSlot")
-                            utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
-                        }
-                    } else {
-                        // Move the bowl to inventory
-                        if (bowlSlot == hotBarSlot) {
-                            if (invSlot == null || bowlInvSlot != null) {
-                                chat("here part")
-                                utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE)
-                            } else {
-                                chat("here")
-                                utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL)
-                                utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP)
-                            }
-                        }
-                    }
-
-                    if (hotBarSlot != player.inventory.selectedSlot) {
-                        network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
-                    }
-
-                    wait(inventoryConstraints.delay.random())
-                    return@repeatable
+                    chat("lesgo")
+                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP)
+                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL)
+                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP)
                 }
+
+                if (hotBarSlot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                }
+
+                wait(inventoryConstraints.delay.random())
+                return@repeatable
             } else {
                 // Search for the specific item in inventory and quick move it to hotbar
                 if (invSlot != null) {
