@@ -80,7 +80,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
                 if (bowlSlot != null) {
                     chat("lesgo")
-                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL, true)
+                    utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE, true)
                 }
 
                 if (hotBarSlot != player.inventory.selectedSlot) {
