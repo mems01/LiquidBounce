@@ -22,6 +22,7 @@ import net.ccbluex.liquidbounce.config.NamedChoice
 import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.moving
 import net.ccbluex.liquidbounce.utils.item.InventoryConstraintsConfigurable
 import net.ccbluex.liquidbounce.utils.item.convertClientSlotToServerSlot
@@ -79,18 +80,23 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
                 // Check if there is an empty bowl in hotbar
                 if (bowlSlot != null) {
+                    chat("is there if so there $bowlSlot")
                     // Drop the bowl
                     if (bowl == BowlMode.DROP) {
                         if (bowlSlot == hotBarSlot) {
+                            chat("cant drop lol but invslot is $bowlSlot")
                             utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
                         }
                     } else {
                         // Move the bowl to inventory
                         if (bowlSlot == hotBarSlot) {
                             if (invSlot == null || bowlInvSlot != null) {
+                                chat("here part")
                                 utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE)
                             } else {
+                                chat("here")
                                 utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL)
+                                utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP)
                             }
                         }
                     }
