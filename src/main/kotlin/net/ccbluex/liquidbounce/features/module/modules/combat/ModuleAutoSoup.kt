@@ -80,8 +80,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
                 if (bowlSlot != null) {
                     chat("lesgo")
-                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP)
-                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL)
+                    utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL, true)
                 }
 
                 if (hotBarSlot != player.inventory.selectedSlot) {
@@ -93,14 +92,14 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
             } else {
                 // Search for the specific item in inventory and quick move it to hotbar
                 if (invSlot != null) {
-                    utilizeInventory(invSlot, 0, SlotActionType.QUICK_MOVE)
+                    utilizeInventory(invSlot, 0, SlotActionType.QUICK_MOVE, true)
                 }
                 return@repeatable
             }
         }
     }
 
-    private fun utilizeInventory(slot: Int, button: Int, slotActionType: SlotActionType) {
+    private fun utilizeInventory(slot: Int, button: Int, slotActionType: SlotActionType, close: Boolean) {
         val serverSlot = convertClientSlotToServerSlot(slot)
         val isInInventoryScreen = mc.currentScreen is InventoryScreen
 
@@ -113,8 +112,10 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
             interaction.clickSlot(0, serverSlot, button, slotActionType, player)
 
-            if (openInventory) {
-                network.sendPacket(CloseHandledScreenC2SPacket(0))
+            if (close) {
+                if (openInventory) {
+                    network.sendPacket(CloseHandledScreenC2SPacket(0))
+                }
             }
         }
     }
