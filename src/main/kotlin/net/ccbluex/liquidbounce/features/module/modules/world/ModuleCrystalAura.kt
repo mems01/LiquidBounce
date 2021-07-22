@@ -54,8 +54,8 @@ import net.minecraft.world.RaycastContext
 
 object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
 
-    private val swing by boolean("Swing", true)
     private val range by float("Range", 4f, 3f..8f)
+    private val swing by boolean("Swing", true)
 
     // Target
     private val targetTracker = tree(TargetTracker())
@@ -74,14 +74,13 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
             player.inventory.getStack(it).item == Items.END_CRYSTAL
         } ?: return@repeatable
 
-        val rangeSquared = range * range
-
         for (enemy in targetTracker.enemies()) {
-            if (player.squaredBoxedDistanceTo(enemy) > rangeSquared) {
+            if (player.squaredBoxedDistanceTo(enemy) > range * range) {
                 return@repeatable
             }
 
             updateTarget()
+
             val curr = currentBlock ?: return@repeatable
             val serverRotation = RotationManager.serverRotation ?: return@repeatable
 
@@ -126,14 +125,10 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
         if (player.isSpectator) {
             return
         }
-
-        val rangeSquared = range * range
-
-        targetTracker.validateLock { it.squaredBoxedDistanceTo(player) <= rangeSquared }
-
+        targetTracker.validateLock { it.squaredBoxedDistanceTo(player) <= range * range }
         for (block in world.entities) {
             if (block is EndCrystalEntity) {
-                if (block.squaredBoxedDistanceTo(player) > rangeSquared) {
+                if (block.squaredBoxedDistanceTo(player) > range * range) {
                     return
                 }
                 // find best spot (and skip if no spot was found)
@@ -141,7 +136,7 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
                     player.eyesPos,
                     block.boundingBox,
                     throughWalls = false,
-                    range = rangeSquared.toDouble()
+                    range = range * range.toDouble()
                 ) ?: continue
 
                 // lock on target tracker
