@@ -72,7 +72,10 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
+                if (hotBarSlot != player.inventory.selectedSlot) {
+                    network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
+                }
+
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
 
                 if (bowlSlot != null) {
@@ -81,22 +84,24 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
                             utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
                         }
                         BowlMode.MOVE -> {
-                            if (!throwOnce) {
-                                utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
-                                throwOnce = true
+                            if (invSlot != null) {
+                                if (!throwOnce) {
+                                    utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
+                                    throwOnce = true
+                                }
                             } else {
                                 utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE)
                             }
                         }
                     }
-                }
 
-                if (hotBarSlot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
-                }
+                    if (hotBarSlot != player.inventory.selectedSlot) {
+                        network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                    }
 
-                wait(inventoryConstraints.delay.random())
-                return@repeatable
+                    wait(inventoryConstraints.delay.random())
+                    return@repeatable
+                }
             } else {
                 // Search for the specific item in inventory and quick move it to hotbar
                 if (invSlot != null) {
