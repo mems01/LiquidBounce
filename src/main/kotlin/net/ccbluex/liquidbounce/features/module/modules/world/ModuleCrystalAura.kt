@@ -35,6 +35,7 @@ import net.ccbluex.liquidbounce.utils.combat.TargetTracker
 import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
 import net.ccbluex.liquidbounce.utils.entity.eyesPos
 import net.ccbluex.liquidbounce.utils.entity.getNearestPoint
+import net.ccbluex.liquidbounce.utils.entity.squaredBoxedDistanceTo
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.entity.Entity
@@ -56,8 +57,6 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
     private val swing by boolean("Swing", true)
     private val range by float("Range", 4f, 3f..8f)
 
-    var functioning = false
-
     // Target
     private val targetTracker = tree(TargetTracker())
 
@@ -68,7 +67,6 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
 
     override fun disable() {
         targetTracker.cleanup()
-        functioning = false
     }
 
     val networkTickHandler = repeatable {
@@ -76,45 +74,48 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
             player.inventory.getStack(it).item == Items.END_CRYSTAL
         } ?: return@repeatable
 
+        val rangeSquared = range * range
+
         for (enemy in targetTracker.enemies()) {
-            if (player.distanceTo(enemy) >= range - 1) {
+            if (player.distanceTo(enemy) > rangeSquared) {
+                return@repeatable
+            }
 
-                updateTarget()
-                val curr = currentBlock ?: return@repeatable
-                val serverRotation = RotationManager.serverRotation ?: return@repeatable
+            updateTarget()
+            val curr = currentBlock ?: return@repeatable
+            val serverRotation = RotationManager.serverRotation ?: return@repeatable
 
-                val rayTraceResult = raytraceBlock(
-                    range.toDouble(),
-                    serverRotation,
-                    curr,
-                    curr.getState() ?: return@repeatable
-                )
+            val rayTraceResult = raytraceBlock(
+                range.toDouble(),
+                serverRotation,
+                curr,
+                curr.getState() ?: return@repeatable
+            )
 
-                if (rayTraceResult?.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr) {
-                    return@repeatable
+            if (rayTraceResult?.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr) {
+                return@repeatable
+            }
+
+            if (slot != player.inventory.selectedSlot) {
+                network.sendPacket(UpdateSelectedSlotC2SPacket(slot))
+            }
+
+            if (interaction.interactBlock(
+                    player,
+                    world,
+                    Hand.MAIN_HAND,
+                    rayTraceResult
+                ) == ActionResult.SUCCESS
+            ) {
+                if (swing) {
+                    player.swingHand(Hand.MAIN_HAND)
+                } else {
+                    network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
                 }
+            }
 
-                if (slot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(slot))
-                }
-
-                if (interaction.interactBlock(
-                        player,
-                        world,
-                        Hand.MAIN_HAND,
-                        rayTraceResult
-                    ) == ActionResult.SUCCESS
-                ) {
-                    if (swing) {
-                        player.swingHand(Hand.MAIN_HAND)
-                    } else {
-                        network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
-                    }
-                }
-
-                if (slot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
-                }
+            if (slot != player.inventory.selectedSlot) {
+                network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
             }
 
             destroy()
@@ -125,10 +126,14 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
         if (player.isSpectator) {
             return
         }
-        targetTracker.validateLock { it.boxedDistanceTo(player) <= range }
+
+        val rangeSquared = range * range
+
+        targetTracker.validateLock { it.squaredBoxedDistanceTo(player) <= range }
+
         for (block in world.entities) {
             if (block is EndCrystalEntity) {
-                if (block.boxedDistanceTo(player) > range) {
+                if (block.squaredBoxedDistanceTo(player) > rangeSquared) {
                     return
                 }
                 // find best spot (and skip if no spot was found)
@@ -136,7 +141,7 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
                     player.eyesPos,
                     block.boundingBox,
                     throughWalls = false,
-                    range = range.toDouble()
+                    range = rangeSquared.toDouble()
                 ) ?: continue
 
                 // lock on target tracker

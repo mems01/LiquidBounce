@@ -35,7 +35,7 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
     val health by int("Health", 18, 1..20)
 
     val repeatable = repeatable {
-        val hotBarSlot = (0..8).firstOrNull {
+        val hotBarSlot = (0..8).find {
             player.inventory.getStack(it).item is MushroomStewItem
         }
 
