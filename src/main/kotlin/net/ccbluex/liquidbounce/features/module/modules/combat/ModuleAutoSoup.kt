@@ -22,7 +22,6 @@ import net.ccbluex.liquidbounce.config.NamedChoice
 import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
-import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.moving
 import net.ccbluex.liquidbounce.utils.item.InventoryConstraintsConfigurable
 import net.ccbluex.liquidbounce.utils.item.convertClientSlotToServerSlot
@@ -39,6 +38,8 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
     private val bowl by enumChoice("Bowl", BowlMode.DROP, BowlMode.values())
     val health by int("Health", 18, 1..20)
+    val b by boolean("b", false)
+    val a by boolean("a", false)
     val inventoryConstraints = InventoryConstraintsConfigurable()
 
     init {
@@ -55,10 +56,6 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
         }
 
         val bowlSlot = (0..8).find {
-            player.inventory.getStack(it).item == Items.BOWL
-        }
-
-        val bowlInvSlot = (0..40).find {
             player.inventory.getStack(it).item == Items.BOWL
         }
 
@@ -79,8 +76,16 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
 
                 if (bowlSlot != null) {
-                    chat("lesgo")
-                    utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE, true)
+                    when (bowl) {
+                        BowlMode.DROP -> {
+                            utilizeInventory(bowlSlot, 1, SlotActionType.THROW, true)
+                        }
+                        BowlMode.MOVE -> {
+                            utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL, false)
+                            if (b) if (invSlot == null) interaction.clickSlot(0, bowlSlot, 0, SlotActionType.PICKUP, player)
+                            if (a) network.sendPacket(CloseHandledScreenC2SPacket(0))
+                        }
+                    }
                 }
 
                 if (hotBarSlot != player.inventory.selectedSlot) {
