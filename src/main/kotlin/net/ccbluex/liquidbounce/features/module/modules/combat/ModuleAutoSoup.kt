@@ -28,17 +28,18 @@ import net.ccbluex.liquidbounce.utils.item.InventoryConstraintsConfigurable
 import net.ccbluex.liquidbounce.utils.item.convertClientSlotToServerSlot
 import net.minecraft.client.gui.screen.ingame.InventoryScreen
 import net.minecraft.item.Items
-import net.minecraft.item.MushroomStewItem
-import net.minecraft.network.packet.c2s.play.*
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
+import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket
+import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket
+import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.util.Hand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
 
 object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
     private val bowl by enumChoice("Bowl", BowlMode.DROP, BowlMode.values())
     val health by int("Health", 18, 1..20)
+    val b by boolean("b", false)
     val inventoryConstraints = InventoryConstraintsConfigurable()
 
     init {
@@ -71,29 +72,56 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
                 }
 
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
-                if (player.inventory.getStack(hotBarSlot).item == Items.BOWL) {
-                    chat("and it became bowl after eating or did it")
-                    // Drop the bowl after eating
-                    if (bowl == BowlMode.DROP) {
-                        utilizeInventory(hotBarSlot, 1, SlotActionType.THROW)
-                    } else {
-                        if (player.inventory.getStack(invSlot!!).isEmpty || player.inventory.getStack(invSlot).item == Items.BOWL) {
-                            chat("$invSlot is empty lets see")
-                            // Put all empty bowls into 1 bowl and then move it to inventory so as to have space for other items
-                            utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
+                if (b) {
+                    if (hotBarSlot == null) {
+                        chat("and it became bowl after eating or did it")
+                        // Drop the bowl after eating
+                        if (bowl == BowlMode.DROP) {
+                            utilizeInventory(hotBarSlot, 1, SlotActionType.THROW)
                         } else {
-                            chat("empty slots, therefore preparing item")
-                            // If there's no available slot, simply prepare the items
-                            utilizeInventory(hotBarSlot, 0, SlotActionType.PICKUP_ALL)
+                            if (player.inventory.getStack(invSlot!!).isEmpty || player.inventory.getStack(invSlot).item == Items.BOWL) {
+                                chat("$invSlot is empty lets see")
+                                // Put all empty bowls into 1 bowl and then move it to inventory so as to have space for other items
+                                utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
+                            } else {
+                                chat("empty slots, therefore preparing item")
+                                // If there's no available slot, simply prepare the items
+                                utilizeInventory(hotBarSlot, 0, SlotActionType.PICKUP_ALL)
+                            }
                         }
-                    }
 
-                    if (hotBarSlot != player.inventory.selectedSlot) {
-                        network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
-                    }
+                        if (hotBarSlot != player.inventory.selectedSlot) {
+                            network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                        }
 
-                    wait(inventoryConstraints.delay.random())
-                    return@repeatable
+                        wait(inventoryConstraints.delay.random())
+                        return@repeatable
+                    }
+                } else {
+                    if (player.inventory.getStack(hotBarSlot).item != Items.MUSHROOM_STEW)  {
+                        chat("and it became bowl after eating or did it")
+                        // Drop the bowl after eating
+                        if (bowl == BowlMode.DROP) {
+                            utilizeInventory(hotBarSlot, 1, SlotActionType.THROW)
+                        } else {
+                            if (player.inventory.getStack(invSlot!!).isEmpty || player.inventory.getStack(invSlot).item == Items.BOWL) {
+                                chat("$invSlot is empty lets see")
+                                // Put all empty bowls into 1 bowl and then move it to inventory so as to have space for other items
+                                utilizeInventory(hotBarSlot, 0, SlotActionType.QUICK_MOVE)
+                            } else {
+                                chat("empty slots, therefore preparing item")
+                                // If there's no available slot, simply prepare the items
+                                utilizeInventory(hotBarSlot, 0, SlotActionType.PICKUP_ALL)
+                            }
+                        }
+
+                        if (hotBarSlot != player.inventory.selectedSlot) {
+                            network.sendPacket(UpdateSelectedSlotC2SPacket(player.inventory.selectedSlot))
+                        }
+
+                        wait(inventoryConstraints.delay.random())
+                        return@repeatable
+                    }
                 }
             } else {
                 // Search for the specific item in inventory and quick move it to hotbar
