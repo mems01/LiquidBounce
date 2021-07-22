@@ -38,13 +38,13 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
     private val bowl by enumChoice("Bowl", BowlMode.DROP, BowlMode.values())
     val health by int("Health", 18, 1..20)
-    val b by boolean("b", false)
-    val a by boolean("a", false)
     val inventoryConstraints = InventoryConstraintsConfigurable()
 
     init {
         tree(inventoryConstraints)
     }
+
+    var throwOnce = false
 
     val repeatable = repeatable {
         val hotBarSlot = (0..8).find {
@@ -64,26 +64,29 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
         }
 
         if (player.isDead) {
+            if (throwOnce) {
+                throwOnce = false
+            }
             return@repeatable
         }
 
         if (player.health < health) {
             if (hotBarSlot != null) {
-                if (hotBarSlot != player.inventory.selectedSlot) {
-                    network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
-                }
-
+                network.sendPacket(UpdateSelectedSlotC2SPacket(hotBarSlot))
                 network.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
 
                 if (bowlSlot != null) {
                     when (bowl) {
                         BowlMode.DROP -> {
-                            utilizeInventory(bowlSlot, 1, SlotActionType.THROW, true)
+                            utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
                         }
                         BowlMode.MOVE -> {
-                            utilizeInventory(bowlSlot, 0, SlotActionType.PICKUP_ALL, false)
-                            if (b) if (invSlot == null) interaction.clickSlot(0, bowlSlot, 0, SlotActionType.PICKUP, player)
-                            if (a) network.sendPacket(CloseHandledScreenC2SPacket(0))
+                            if (!throwOnce) {
+                                utilizeInventory(bowlSlot, 1, SlotActionType.THROW)
+                                throwOnce = true
+                            } else {
+                                utilizeInventory(bowlSlot, 0, SlotActionType.QUICK_MOVE)
+                            }
                         }
                     }
                 }
@@ -97,14 +100,14 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
             } else {
                 // Search for the specific item in inventory and quick move it to hotbar
                 if (invSlot != null) {
-                    utilizeInventory(invSlot, 0, SlotActionType.QUICK_MOVE, true)
+                    utilizeInventory(invSlot, 0, SlotActionType.QUICK_MOVE)
                 }
                 return@repeatable
             }
         }
     }
 
-    private fun utilizeInventory(slot: Int, button: Int, slotActionType: SlotActionType, close: Boolean) {
+    private fun utilizeInventory(slot: Int, button: Int, slotActionType: SlotActionType) {
         val serverSlot = convertClientSlotToServerSlot(slot)
         val isInInventoryScreen = mc.currentScreen is InventoryScreen
 
@@ -117,10 +120,8 @@ object ModuleAutoSoup : Module("AutoSoup", Category.COMBAT) {
 
             interaction.clickSlot(0, serverSlot, button, slotActionType, player)
 
-            if (close) {
-                if (openInventory) {
-                    network.sendPacket(CloseHandledScreenC2SPacket(0))
-                }
+            if (openInventory) {
+                network.sendPacket(CloseHandledScreenC2SPacket(0))
             }
         }
     }
