@@ -129,7 +129,7 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
 
         val rangeSquared = range * range
 
-        targetTracker.validateLock { it.squaredBoxedDistanceTo(player) <= range }
+        targetTracker.validateLock { it.squaredBoxedDistanceTo(player) <= rangeSquared }
 
         for (block in world.entities) {
             if (block is EndCrystalEntity) {
