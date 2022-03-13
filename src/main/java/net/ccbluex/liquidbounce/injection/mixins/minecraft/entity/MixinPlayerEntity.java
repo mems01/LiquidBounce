@@ -23,26 +23,19 @@ import net.ccbluex.liquidbounce.event.EventManager;
 import net.ccbluex.liquidbounce.event.PlayerSafeWalkEvent;
 import net.ccbluex.liquidbounce.event.PlayerStrideEvent;
 import net.ccbluex.liquidbounce.features.module.modules.exploit.ModuleAntiReducedDebugInfo;
-import net.ccbluex.liquidbounce.features.module.modules.world.ModuleNoSlowBreak;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.SilentHotbar;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.tag.FluidTags;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 
 @Mixin(PlayerEntity.class)
 public abstract class MixinPlayerEntity extends MixinLivingEntity {
@@ -54,7 +47,23 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
     /**
      * Hook player stride event
      */
-    @ModifyVariable(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerEntity;strideDistance:F", shift = At.Shift.BEFORE, ordinal = 0), slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setMovementSpeed(F)V"), to = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSpectator()Z")), index = 1, ordinal = 0, require = 1, allow = 1)
+    @ModifyVariable(
+            method = "tickMovement",
+            at = @At(
+                    value = "FIELD",
+                    target = "Lnet/minecraft/entity/player/PlayerEntity;strideDistance:F",
+                    shift = At.Shift.BEFORE,
+                    ordinal = 0
+            ),
+            slice = @Slice(
+                    from = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;setMovementSpeed(F)V"),
+                    to = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSpectator()Z")
+            ),
+            index = 1,
+            ordinal = 0,
+            require = 1,
+            allow = 1
+    )
     private float hookStrideForce(float strideForce) {
         final PlayerStrideEvent event = new PlayerStrideEvent(strideForce);
         EventManager.INSTANCE.callEvent(event);
@@ -68,7 +77,8 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
     private ItemStack hookMainHandStack(PlayerInventory playerInventory) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
-        if ((Object) this != player) return this.inventory.getMainHandStack();
+        if ((Object) this != player)
+            return this.inventory.getMainHandStack();
 
         int slot = SilentHotbar.INSTANCE.getServersideSlot();
 
@@ -99,7 +109,8 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
 
         Rotation currentRotation = RotationManager.INSTANCE.getCurrentRotation();
 
-        if (currentRotation == null) return entity.getYaw();
+        if (currentRotation == null)
+            return entity.getYaw();
 
         currentRotation = currentRotation.fixedSensitivity();
 
@@ -146,4 +157,11 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
         cir.setReturnValue(f);
     }
 
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSpectator()Z", shift = At.Shift.BEFORE))
+    private void hookNoClip(CallbackInfo ci) {
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        final PlayerPushOutEvent pushOutEvent = new PlayerPushOutEvent();
+        EventManager.INSTANCE.callEvent(pushOutEvent);
+        this.noClip = player != null && player.noClip || pushOutEvent.isCancelled();
+    }
 }

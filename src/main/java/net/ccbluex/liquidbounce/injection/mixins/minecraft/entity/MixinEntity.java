@@ -78,6 +78,9 @@ public abstract class MixinEntity {
     @Shadow
     public abstract boolean isSubmergedIn(TagKey<Fluid> fluidTag);
 
+    @Shadow
+    public boolean noClip;
+
     /**
      * Hook entity margin modification event
      */
