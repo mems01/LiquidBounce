@@ -30,7 +30,6 @@ import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.math.*
-import org.apache.commons.lang3.RandomUtils
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sqrt
@@ -277,27 +276,25 @@ object RotationManager : Listenable {
         }
 
         // Update rotations
-        val turnSpeed = RandomUtils.nextFloat(60f, 80f) // todo: use config
+        val turnSpeed = 180f // todo: use config
 
         val playerRotation = Rotation(mc.player!!.yaw, mc.player!!.pitch)
 
         if (ticksUntilReset == 0) {
             val threshold = 2f // todo: might use turn speed
 
-            if (rotationDifference(this.currentRotation ?: serverRotation ?: return, playerRotation) < threshold) {
+            currentRotation = limitAngleChange(currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
+
+            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) < threshold) {
                 ticksUntilReset = -1
 
-                this.targetRotation = null
-                this.currentRotation = null
+                targetRotation = null
+                currentRotation = null
                 return
             }
-
-            this.currentRotation =
-                limitAngleChange(this.currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
         } else if (targetRotation != null) {
             targetRotation?.let { targetRotation ->
-                this.currentRotation =
-                    limitAngleChange(this.currentRotation ?: playerRotation, targetRotation, turnSpeed)
+                currentRotation = limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed)
             }
         }
     }
