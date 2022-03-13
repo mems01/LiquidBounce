@@ -29,14 +29,15 @@ import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.input.Input;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
@@ -54,6 +55,10 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
 
     @Shadow
     public Input input;
+
+    @Shadow
+    @Final
+    public ClientPlayNetworkHandler networkHandler;
 
     /**
      * Hook entity tick event
@@ -153,30 +158,30 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook silent rotations
      */
-    @ModifyVariable(method = "sendMovementPackets", ordinal = 1,
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;hasVehicle()Z", shift = At.Shift.BEFORE))
-    private boolean hookSilentRotations(boolean bl4) {
+    @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), name = "bl3")
+    private boolean hookSilentRotations(boolean value) {
         updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
-        return (bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent;
+        return (value && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent;
     }
 
     /**
      * Hook silent rotations
      */
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", shift = At.Shift.AFTER))
-    private void hookSilentRotationsUpdate(CallbackInfo callbackInfo) {
+    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
+    private void hookSilentRotationsUpdate(CallbackInfo ci) {
+        // This might need improvement
         if (updatedSilent) {
             updatedSilent = false;
 
             final Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
-            if (currRotation == null)
+            if (currRotation == null) {
                 return;
+            }
 
             this.lastYaw = currRotation.getYaw();
             this.lastPitch = currRotation.getPitch();
         }
     }
-
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
     private void injectForcedState(CallbackInfoReturnable<Boolean> cir) {
@@ -196,12 +201,12 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     }
 
     @Inject(method = "swingHand", at = @At("HEAD"), cancellable = true)
-    private void swingHand(Hand hand, CallbackInfo callbackInfo) {
+    private void swingHand(Hand hand, CallbackInfo ci) {
         if (ModuleNoSwing.INSTANCE.getEnabled()) {
-            callbackInfo.cancel();
-
-            if (ModuleNoSwing.INSTANCE.getServerSide())
-                MinecraftClient.getInstance().getNetworkHandler().sendPacket(new HandSwingC2SPacket(hand));
+            if (ModuleNoSwing.INSTANCE.getServerSide()) {
+                networkHandler.sendPacket(new HandSwingC2SPacket(hand));
+            }
+            ci.cancel();
         }
     }
 
