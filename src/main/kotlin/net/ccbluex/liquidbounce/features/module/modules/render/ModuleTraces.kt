@@ -48,16 +48,12 @@ import kotlin.math.sqrt
 object ModuleTraces : Module("Traces", Category.RENDER) {
 
     private val modes = choices(
-        "ColorMode",
-        DistanceColor,
-        arrayOf(
-            DistanceColor,
-            StaticColor,
-            RainbowColor
+        "ColorMode", DistanceColor, arrayOf(
+            DistanceColor, StaticColor, RainbowColor
         )
     )
 
-    val combatConfigurable = EnemyConfigurable()
+    private val combatConfigurable = tree(EnemyConfigurable())
 
     private object DistanceColor : Choice("Distance") {
 
@@ -117,9 +113,7 @@ object ModuleTraces : Module("Traces", Category.RENDER) {
             val color = if (useDistanceColor) {
                 Color4b(
                     Color.getHSBColor(
-                        (dist.coerceAtMost(viewDistance) / viewDistance).toFloat() * (120.0f / 360.0f),
-                        1.0f,
-                        1.0f
+                        (dist.coerceAtMost(viewDistance) / viewDistance).toFloat() * (120.0f / 360.0f), 1.0f, 1.0f
                     )
                 )
             } else if (entity is PlayerEntity && FriendManager.isFriend(entity.toString())) {
@@ -155,7 +149,6 @@ object ModuleTraces : Module("Traces", Category.RENDER) {
 
     @JvmStatic
     fun shouldRenderTrace(entity: Entity): Boolean {
-        combatConfigurable.mobs = false
-        return entity.shouldBeShown(combatConfigurable)
+        return entity.shouldBeShown(enemyConf = combatConfigurable)
     }
 }

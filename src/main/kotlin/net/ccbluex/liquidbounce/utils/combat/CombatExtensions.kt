@@ -43,7 +43,7 @@ class EnemyConfigurable : Configurable("Enemies") {
     val players by boolean("Players", true)
 
     // Hostile mobs (like skeletons and zombies) should be considered as a enemy
-    var mobs by boolean("Mobs", true)
+    val mobs by boolean("Mobs", true)
 
     // Animals (like cows, pigs and so on) should be considered as a enemy
     val animals by boolean("Animals", false)
@@ -129,19 +129,12 @@ class EnemyConfigurable : Configurable("Enemies") {
 @JvmOverloads
 fun Entity.shouldBeShown(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(this)
 
-fun Entity.shouldBeAttacked(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(
-    this,
-    true
-)
+fun Entity.shouldBeAttacked(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(this, true)
 
 /**
  * Find the best emeny in current world in a specific range.
  */
 fun ClientWorld.findEnemy(
-    range: Float,
-    player: Entity = mc.player!!,
-    enemyConf: EnemyConfigurable = globalEnemyConfigurable
-) = entities.filter { it.shouldBeAttacked(enemyConf) }
-    .map { Pair(it, it.boxedDistanceTo(player)) }
-    .filter { (_, distance) -> distance <= range }
-    .minByOrNull { (_, distance) -> distance }
+    range: Float, player: Entity = mc.player!!, enemyConf: EnemyConfigurable = globalEnemyConfigurable
+) = entities.filter { it.shouldBeAttacked(enemyConf) }.map { Pair(it, it.boxedDistanceTo(player)) }
+    .filter { (_, distance) -> distance <= range }.minByOrNull { (_, distance) -> distance }
