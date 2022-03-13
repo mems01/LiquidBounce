@@ -43,7 +43,7 @@ class EnemyConfigurable : Configurable("Enemies") {
     val players by boolean("Players", true)
 
     // Hostile mobs (like skeletons and zombies) should be considered as a enemy
-    val mobs by boolean("Mobs", true)
+    var mobs by boolean("Mobs", true)
 
     // Animals (like cows, pigs and so on) should be considered as a enemy
     val animals by boolean("Animals", false)

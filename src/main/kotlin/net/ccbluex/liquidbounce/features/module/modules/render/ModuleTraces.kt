@@ -32,6 +32,7 @@ import net.ccbluex.liquidbounce.render.engine.memory.VertexFormatComponentDataTy
 import net.ccbluex.liquidbounce.render.engine.memory.putVertex
 import net.ccbluex.liquidbounce.render.shaders.ColoredPrimitiveShader
 import net.ccbluex.liquidbounce.render.utils.rainbow
+import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
 import net.ccbluex.liquidbounce.utils.combat.shouldBeShown
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -55,6 +56,8 @@ object ModuleTraces : Module("Traces", Category.RENDER) {
             RainbowColor
         )
     )
+
+    val combatConfigurable = EnemyConfigurable()
 
     private object DistanceColor : Choice("Distance") {
 
@@ -151,5 +154,8 @@ object ModuleTraces : Module("Traces", Category.RENDER) {
     }
 
     @JvmStatic
-    fun shouldRenderTrace(entity: Entity) = entity.shouldBeShown()
+    fun shouldRenderTrace(entity: Entity): Boolean {
+        combatConfigurable.mobs = false
+        return entity.shouldBeShown(combatConfigurable)
+    }
 }
