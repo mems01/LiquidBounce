@@ -41,8 +41,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SplashOverlay.class)
 public class MixinSplashOverlay {
 
-    @Shadow @Final private MinecraftClient client;
-    @Shadow @Final private ResourceReload reload;
+    @Shadow
+    @Final
+    private MinecraftClient client;
+    @Shadow
+    @Final
+    private ResourceReload reload;
 
     private View view = null;
     private boolean closing = false;

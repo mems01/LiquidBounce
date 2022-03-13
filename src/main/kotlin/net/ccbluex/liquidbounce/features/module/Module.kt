@@ -123,17 +123,17 @@ open class Module(
     /**
      * Called when module is turned on
      */
-    open fun enable() { }
+    open fun enable() {}
 
     /**
      * Called when module is turned off
      */
-    open fun disable() { }
+    open fun disable() {}
 
     /**
      * Called when the module is added to the module manager
      */
-    open fun init() { }
+    open fun init() {}
 
     /**
      * Events should be handled when module is enabled

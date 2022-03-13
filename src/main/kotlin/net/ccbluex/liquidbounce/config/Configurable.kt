@@ -24,8 +24,9 @@ import net.ccbluex.liquidbounce.render.engine.Color4b
 import net.minecraft.block.Block
 import net.minecraft.item.Item
 
-open class Configurable(name: String, value: MutableList<Value<*>> = mutableListOf(), valueType: ValueType = ValueType.CONFIGURABLE) :
-    Value<MutableList<Value<*>>>(name, value = value, valueType) {
+open class Configurable(
+    name: String, value: MutableList<Value<*>> = mutableListOf(), valueType: ValueType = ValueType.CONFIGURABLE
+) : Value<MutableList<Value<*>>>(name, value = value, valueType) {
 
     open fun initConfigurable() {
         value.filterIsInstance<Configurable>().forEach {
@@ -70,13 +71,14 @@ open class Configurable(name: String, value: MutableList<Value<*>> = mutableList
 
     // Common value types
 
-    protected fun <T : Configurable> tree(configurable: T): T {
+    fun <T : Configurable> tree(configurable: T): T {
         value.add(configurable)
         return configurable
     }
 
-    protected fun <T : Any> value(name: String, default: T, valueType: ValueType = ValueType.INVALID, listType: ListValueType = ListValueType.None) =
-        Value(name, default, valueType, listType).apply { this@Configurable.value.add(this) }
+    protected fun <T : Any> value(
+        name: String, default: T, valueType: ValueType = ValueType.INVALID, listType: ListValueType = ListValueType.None
+    ) = Value(name, default, valueType, listType).apply { this@Configurable.value.add(this) }
 
     protected fun <T : Any> rangedValue(name: String, default: T, range: ClosedRange<*>, valueType: ValueType) =
         RangedValue(name, default, range, valueType).apply { this@Configurable.value.add(this) }
@@ -89,18 +91,18 @@ open class Configurable(name: String, value: MutableList<Value<*>> = mutableList
         rangedValue(name, default, range, ValueType.FLOAT)
 
     protected fun floatRange(
-        name: String,
-        default: ClosedFloatingPointRange<Float>,
-        range: ClosedFloatingPointRange<Float>
+        name: String, default: ClosedFloatingPointRange<Float>, range: ClosedFloatingPointRange<Float>
     ) = rangedValue(name, default, range, ValueType.FLOAT_RANGE)
 
     protected fun int(name: String, default: Int, range: IntRange) = rangedValue(name, default, range, ValueType.INT)
 
-    protected fun intRange(name: String, default: IntRange, range: IntRange) = rangedValue(name, default, range, ValueType.INT_RANGE)
+    protected fun intRange(name: String, default: IntRange, range: IntRange) =
+        rangedValue(name, default, range, ValueType.INT_RANGE)
 
     protected fun text(name: String, default: String) = value(name, default, ValueType.TEXT)
 
-    protected fun textArray(name: String, default: MutableList<String>) = value(name, default, ValueType.TEXT_ARRAY, ListValueType.String)
+    protected fun textArray(name: String, default: MutableList<String>) =
+        value(name, default, ValueType.TEXT_ARRAY, ListValueType.String)
 
     protected fun curve(name: String, default: Array<Float>) = value(name, default, ValueType.CURVE)
 
@@ -108,11 +110,13 @@ open class Configurable(name: String, value: MutableList<Value<*>> = mutableList
 
     protected fun block(name: String, default: Block) = value(name, default, ValueType.BLOCK)
 
-    protected fun blocks(name: String, default: MutableSet<Block>) = value(name, default, ValueType.BLOCKS, ListValueType.Block)
+    protected fun blocks(name: String, default: MutableSet<Block>) =
+        value(name, default, ValueType.BLOCKS, ListValueType.Block)
 
     protected fun item(name: String, default: Item) = value(name, default, ValueType.ITEM)
 
-    protected fun items(name: String, default: MutableList<Item>) = value(name, default, ValueType.ITEMS, ListValueType.Item)
+    protected fun items(name: String, default: MutableList<Item>) =
+        value(name, default, ValueType.ITEMS, ListValueType.Item)
 
     protected fun fonts(name: String, default: MutableList<Fonts.FontDetail>) =
         value(name, default, ValueType.INVALID, ListValueType.FontDetail)

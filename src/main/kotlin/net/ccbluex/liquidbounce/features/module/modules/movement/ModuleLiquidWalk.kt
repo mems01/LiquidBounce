@@ -85,7 +85,10 @@ object ModuleLiquidWalk : Module("LiquidWalk", Category.MOVEMENT) {
                 val detectionBox = boundingBox.withMinY(boundingBox.minY - 0.5)
 
                 // todo: fix moving passable flags on edges
-                if (!player.input.sneaking && !player.isTouchingWater && standingOnWater() && !collideBlockIntersects(detectionBox) { it !is FluidBlock }) {
+                if (!player.input.sneaking && !player.isTouchingWater && standingOnWater() && !collideBlockIntersects(
+                        detectionBox
+                    ) { it !is FluidBlock }
+                ) {
                     if (tick) {
                         packet.y -= 0.001
                     }

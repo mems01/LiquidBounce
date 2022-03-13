@@ -29,7 +29,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(RenderTickCounter.class)
 public class MixinRenderTickCounter {
 
-    @Shadow public float lastFrameDuration;
+    @Shadow
+    public float lastFrameDuration;
 
     /**
      * Hook timer speed to modify frame duration

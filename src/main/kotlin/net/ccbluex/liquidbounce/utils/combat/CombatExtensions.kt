@@ -20,6 +20,7 @@ package net.ccbluex.liquidbounce.utils.combat
 
 import net.ccbluex.liquidbounce.config.ConfigSystem
 import net.ccbluex.liquidbounce.config.Configurable
+import net.ccbluex.liquidbounce.features.chat.Chat.tree
 import net.ccbluex.liquidbounce.features.misc.FriendManager
 import net.ccbluex.liquidbounce.features.module.modules.misc.ModuleTeams
 import net.ccbluex.liquidbounce.utils.client.mc
@@ -32,7 +33,7 @@ import net.minecraft.entity.mob.MobEntity
 import net.minecraft.entity.passive.PassiveEntity
 import net.minecraft.entity.player.PlayerEntity
 
-val globalEnemyConfigurable = EnemyConfigurable()
+val globalEnemyConfigurable = tree(EnemyConfigurable())
 
 /**
  * Configurable to configure which entities and their state (like being dead) should be considered as enemy
@@ -130,18 +131,13 @@ class EnemyConfigurable : Configurable("Enemies") {
 fun Entity.shouldBeShown(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(this)
 
 fun Entity.shouldBeAttacked(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(
-    this,
-    true
+    this, true
 )
 
 /**
  * Find the best emeny in current world in a specific range.
  */
 fun ClientWorld.findEnemy(
-    range: Float,
-    player: Entity = mc.player!!,
-    enemyConf: EnemyConfigurable = globalEnemyConfigurable
-) = entities.filter { it.shouldBeAttacked(enemyConf) }
-    .map { Pair(it, it.boxedDistanceTo(player)) }
-    .filter { (_, distance) -> distance <= range }
-    .minByOrNull { (_, distance) -> distance }
+    range: Float, player: Entity = mc.player!!, enemyConf: EnemyConfigurable = globalEnemyConfigurable
+) = entities.filter { it.shouldBeAttacked(enemyConf) }.map { Pair(it, it.boxedDistanceTo(player)) }
+    .filter { (_, distance) -> distance <= range }.minByOrNull { (_, distance) -> distance }

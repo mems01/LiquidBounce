@@ -34,7 +34,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinWindow {
 
 
-    @Shadow @Final private long handle;
+    @Shadow
+    @Final
+    private long handle;
 
     /**
      * Hook window resize

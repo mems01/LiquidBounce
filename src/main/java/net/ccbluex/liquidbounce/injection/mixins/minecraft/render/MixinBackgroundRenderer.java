@@ -43,12 +43,10 @@ import static org.spongepowered.asm.mixin.injection.At.Shift.AFTER;
 @Mixin(BackgroundRenderer.class)
 public abstract class MixinBackgroundRenderer implements IMixinGameRenderer {
 
-    @Redirect(method = "applyFog", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect"
-        + "(Lnet/minecraft/entity/effect/StatusEffect;)Z"))
+    @Redirect(method = "applyFog", at = @At(value = "INVOKE", ordinal = 1, target = "Lnet/minecraft/entity/LivingEntity;hasStatusEffect" + "(Lnet/minecraft/entity/effect/StatusEffect;)Z"))
     private static boolean injectAntiBlind(LivingEntity livingEntity, StatusEffect effect) {
         ModuleAntiBlind module = ModuleAntiBlind.INSTANCE;
-        return (!module.getEnabled() || !module.getAntiBlind())
-            && livingEntity.hasStatusEffect(effect);
+        return (!module.getEnabled() || !module.getAntiBlind()) && livingEntity.hasStatusEffect(effect);
     }
 
     @Inject(method = "applyFog", at = @At(value = "INVOKE", shift = AFTER, ordinal = 0, target = "Lcom/mojang/blaze3d/systems/RenderSystem;setShaderFogStart(F)V", remap = false))

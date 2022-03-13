@@ -11,7 +11,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ChatScreen.class)
 public abstract class MixinChatScreen extends MixinScreen {
 
-    @Shadow protected TextFieldWidget chatField;
+    @Shadow
+    protected TextFieldWidget chatField;
 
     /**
      * We want to close the screen before sending the message to make sure it doesn't affect commands.

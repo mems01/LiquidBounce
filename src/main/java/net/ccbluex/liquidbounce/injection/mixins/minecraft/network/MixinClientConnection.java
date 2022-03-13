@@ -49,14 +49,18 @@ import java.net.InetSocketAddress;
 @Mixin(ClientConnection.class)
 public class MixinClientConnection {
 
-    @Shadow @Final public static Lazy<EpollEventLoopGroup> EPOLL_CLIENT_IO_GROUP;
+    @Shadow
+    @Final
+    public static Lazy<EpollEventLoopGroup> EPOLL_CLIENT_IO_GROUP;
 
-    @Shadow @Final public static Lazy<NioEventLoopGroup> CLIENT_IO_GROUP;
+    @Shadow
+    @Final
+    public static Lazy<NioEventLoopGroup> CLIENT_IO_GROUP;
 
     /**
      * Handle sending packets
      *
-     * @param packet packet to send
+     * @param packet       packet to send
      * @param callbackInfo callback
      */
     @Inject(method = "send(Lnet/minecraft/network/Packet;)V", at = @At("HEAD"), cancellable = true)
@@ -88,6 +92,7 @@ public class MixinClientConnection {
 
     /**
      * Hook custom netty connection
+     *
      * @author mojang
      */
     @Overwrite
@@ -105,7 +110,7 @@ public class MixinClientConnection {
         }
 
         new Bootstrap()
-                .group((EventLoopGroup)lazy2.get())
+                .group((EventLoopGroup) lazy2.get())
                 .handler(ProxyManager.INSTANCE.setupConnect(clientConnection))
                 .channel(class2)
                 .connect(address.getAddress(), address.getPort())

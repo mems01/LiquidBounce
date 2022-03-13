@@ -63,9 +63,11 @@ public abstract class MixinGameRenderer implements IMixinGameRenderer {
     @Shadow
     protected abstract void bobView(MatrixStack matrixStack, float f);
 
-    @Shadow public abstract Matrix4f getBasicProjectionMatrix(double d);
+    @Shadow
+    public abstract Matrix4f getBasicProjectionMatrix(double d);
 
-    @Shadow protected abstract double getFov(Camera camera, float tickDelta, boolean changingFov);
+    @Shadow
+    protected abstract double getFov(Camera camera, float tickDelta, boolean changingFov);
 
     /**
      * Hook game render event
@@ -103,9 +105,9 @@ public abstract class MixinGameRenderer implements IMixinGameRenderer {
                 float g = 5.0F / (f * f + 5.0F) - f * 0.04F;
                 g *= g;
                 Vec3f vec3f = new Vec3f(0.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F, MathHelper.SQUARE_ROOT_OF_TWO / 2.0F);
-                matrixStack.multiply(vec3f.getDegreesQuaternion(((float)this.ticks + tickDelta) * (float)i));
+                matrixStack.multiply(vec3f.getDegreesQuaternion(((float) this.ticks + tickDelta) * (float) i));
                 matrixStack.scale(1.0F / g, 1.0F, 1.0F);
-                float h = -((float)this.ticks + tickDelta) * (float)i;
+                float h = -((float) this.ticks + tickDelta) * (float) i;
                 matrixStack.multiply(vec3f.getDegreesQuaternion(h));
             }
         }
@@ -124,19 +126,19 @@ public abstract class MixinGameRenderer implements IMixinGameRenderer {
 
     @Inject(method = "bobViewWhenHurt", at = @At("HEAD"), cancellable = true)
     private void injectHurtCam(MatrixStack matrixStack, float f, CallbackInfo callbackInfo) {
-        if(ModuleNoHurtCam.INSTANCE.getEnabled()) {
+        if (ModuleNoHurtCam.INSTANCE.getEnabled()) {
             callbackInfo.cancel();
         }
     }
 
     @Inject(method = "bobView", at = @At("HEAD"), cancellable = true)
     private void injectBobView(MatrixStack matrixStack, float f, CallbackInfo callbackInfo) {
-        if(ModuleNoBob.INSTANCE.getEnabled()) {
+        if (ModuleNoBob.INSTANCE.getEnabled()) {
             callbackInfo.cancel();
             return;
         }
 
-        if(!ModuleDankBobbing.INSTANCE.getEnabled()) {
+        if (!ModuleDankBobbing.INSTANCE.getEnabled()) {
             return;
         }
 

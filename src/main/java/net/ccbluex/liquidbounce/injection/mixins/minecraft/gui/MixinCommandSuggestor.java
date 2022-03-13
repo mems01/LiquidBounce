@@ -38,13 +38,19 @@ import java.util.concurrent.CompletableFuture;
 @Mixin(CommandSuggestor.class)
 public class MixinCommandSuggestor {
 
-    @Shadow @Final private boolean slashOptional;
+    @Shadow
+    @Final
+    private boolean slashOptional;
 
-    @Shadow @Final private TextFieldWidget textField;
+    @Shadow
+    @Final
+    private TextFieldWidget textField;
 
-    @Shadow private CompletableFuture<Suggestions> pendingSuggestions;
+    @Shadow
+    private CompletableFuture<Suggestions> pendingSuggestions;
 
-    @Shadow private ParseResults<CommandSource> parse;
+    @Shadow
+    private ParseResults<CommandSource> parse;
 
     @Redirect(method = "refresh", at = @At(value = "FIELD", target = "Lnet/minecraft/client/gui/screen/CommandSuggestor;slashOptional:Z"))
     private boolean injectAutoCompletionA(CommandSuggestor suggestor) {

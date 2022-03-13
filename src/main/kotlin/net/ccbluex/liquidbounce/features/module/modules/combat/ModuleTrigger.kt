@@ -43,7 +43,8 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
         val crosshair = mc.crosshairTarget
 
         if (crosshair is EntityHitResult && crosshair.entity.shouldBeAttacked()) {
-            val clicks = cpsTimer.clicks(condition = { !cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f }, cps)
+            val clicks =
+                cpsTimer.clicks(condition = { !cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f }, cps)
 
             repeat(clicks) {
                 interaction.attackEntity(player, crosshair.entity)

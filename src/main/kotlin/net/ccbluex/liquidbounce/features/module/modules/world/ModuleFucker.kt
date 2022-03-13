@@ -63,7 +63,7 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
     private val action by enumChoice("Action", DestroyAction.USE, DestroyAction.values())
     private val throughWalls by boolean("ThroughWalls", false)
 
-//    private val instant by boolean("Instant", false) // TODO: Instant option
+    //    private val instant by boolean("Instant", false) // TODO: Instant option
     private val delay by int("SwitchDelay", 0, 0..20)
 
     // Rotation

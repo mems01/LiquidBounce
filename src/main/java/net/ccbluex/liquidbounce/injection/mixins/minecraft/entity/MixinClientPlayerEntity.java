@@ -29,14 +29,15 @@ import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.input.Input;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
@@ -54,6 +55,10 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
 
     @Shadow
     public Input input;
+
+    @Shadow
+    @Final
+    public ClientPlayNetworkHandler networkHandler;
 
     /**
      * Hook entity tick event
@@ -126,18 +131,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook sprint affect from NoSlow module
      */
-    @Redirect(method = "tickMovement",
-            slice = @Slice(
-                    from = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;getFoodLevel()I"),
-                    to = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isFallFlying()Z")
-            ),
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"
-            ),
-            require = 2,
-            allow = 2
-    )
+    @Redirect(method = "tickMovement", slice = @Slice(from = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;getFoodLevel()I"), to = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isFallFlying()Z")), at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z"), require = 2, allow = 2)
     private boolean hookSprintAffect(ClientPlayerEntity playerEntity) {
         if (ModuleNoSlow.INSTANCE.getEnabled()) {
             return false;
