@@ -29,15 +29,14 @@ import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.input.Input;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.MovementType;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.*;
@@ -55,10 +54,6 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
 
     @Shadow
     public Input input;
-
-    @Shadow
-    @Final
-    public ClientPlayNetworkHandler networkHandler;
 
     /**
      * Hook entity tick event
@@ -114,7 +109,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook custom multiplier
      */
-    @Inject(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/client/input/Input;movementForward:F", shift = At.Shift.AFTER))
+    @Inject(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z", ordinal = 0))
     private void hookCustomMultiplier(CallbackInfo callbackInfo) {
         final Input input = this.input;
         // reverse
@@ -182,6 +177,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
             this.lastPitch = currRotation.getPitch();
         }
     }
+
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
     private void injectForcedState(CallbackInfoReturnable<Boolean> cir) {
