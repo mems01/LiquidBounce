@@ -162,7 +162,12 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         if (updatedSilent) {
             updatedSilent = false;
 
-            final Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
+            Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
+            if (currRotation == null) {
+                return;
+            }
+
+            currRotation = currRotation.fixedSensitivity();
             if (currRotation == null) {
                 return;
             }

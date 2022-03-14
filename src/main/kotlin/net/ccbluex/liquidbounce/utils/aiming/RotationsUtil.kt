@@ -304,7 +304,7 @@ object RotationManager : Listenable {
         update()
 
         // Check if something changed
-        val (currYaw, currPitch) = currentRotation ?: return false
+        val (currYaw, currPitch) = currentRotation?.fixedSensitivity() ?: return false
 
         return lastYaw != currYaw || lastPitch != currPitch
     }
