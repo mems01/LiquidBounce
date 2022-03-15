@@ -91,16 +91,16 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                 return@repeatable
             }
 
-            for (otherPlayer in world.players) {
-                if (!suspiciousPlayerList.contains(otherPlayer.uuid)) {
+            for (entity in world.players) {
+                if (!suspiciousPlayerList.contains(entity.uuid)) {
                     continue
                 }
 
-                if (isFullyArmored(otherPlayer) && otherPlayer.gameProfile.properties.isEmpty) {
-                    confirmedBotList.add(otherPlayer.uuid)
+                if (isFullyArmored(entity) && entity.gameProfile.properties.isEmpty) {
+                    confirmedBotList.add(entity.uuid)
                 }
 
-                suspiciousPlayerList.remove(otherPlayer.uuid)
+                suspiciousPlayerList.remove(entity.uuid)
             }
         }
 

@@ -26,7 +26,6 @@ import net.ccbluex.liquidbounce.features.module.modules.misc.ModuleAntiBot
 import net.ccbluex.liquidbounce.features.module.modules.misc.ModuleTeams
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
-import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
@@ -68,15 +67,15 @@ class EnemyConfigurable : Configurable("Enemies") {
     class AntiBotConfigurable : Configurable("AntiBot") {
 
         /**
-         * Should always be enabled. A good antibot should never detect a real player as a bot (on default settings).
+         * Should always be active. A good antibot should never detect a real player as a bot (on default settings).
          */
-        val enabled by boolean("Enabled", true)
+        val active by boolean("Active", true)
 
         /**
          * Check if player might be a bot
          */
         fun isBot(player: PlayerEntity): Boolean {
-            if (!enabled) {
+            if (!active) {
                 return false
             }
 
@@ -112,7 +111,7 @@ class EnemyConfigurable : Configurable("Enemies") {
                     }
 
                     // Check if player might be a bot
-                    if (suspect is ClientPlayerEntity && antibot.isBot(suspect)) {
+                    if (antibot.isBot(suspect)) {
                         return false
                     }
 
