@@ -22,17 +22,15 @@ package net.ccbluex.liquidbounce.features.module.modules.misc
 import com.mojang.authlib.GameProfile
 import net.ccbluex.liquidbounce.config.Choice
 import net.ccbluex.liquidbounce.config.ChoiceConfigurable
-import net.ccbluex.liquidbounce.event.NotificationEvent
 import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
-import net.ccbluex.liquidbounce.utils.client.notification
-import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.ArmorItem
 import net.minecraft.network.packet.s2c.play.PlayerListS2CPacket
+import java.util.*
 
 object ModuleAntiBot : Module("AntiBot", Category.MISC) {
 
@@ -46,43 +44,63 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
         // Basically a multiple antibot option dependent mode.
     }
 
-    private object Matrix : Choice("Matrix") {
+    object Matrix : Choice("Matrix") {
         override val parent: ChoiceConfigurable
             get() = modes
 
-        private var pName: String? = null
+        private val suspiciousPlayerList = ArrayList<UUID>()
+        val confirmedBotList = ArrayList<UUID>()
 
-        val packetHandler = handler<PacketEvent> { event ->
-            if (event.packet is PlayerListS2CPacket && event.packet.action == PlayerListS2CPacket.Action.ADD_PLAYER) {
-                for (entry in event.packet.entries) {
-                    if (entry.latency < 2 || !entry.profile.properties.isEmpty || isTheSamePlayer(entry.profile)) {
-                        continue
+        val packetHandler = handler<PacketEvent> {
+            val packet = it.packet
+
+            if (packet !is PlayerListS2CPacket) {
+                return@handler
+            }
+
+            when (packet.action) {
+                PlayerListS2CPacket.Action.ADD_PLAYER -> {
+                    for (entry in packet.entries) {
+                        if (entry.latency < 2 || !entry.profile.properties.isEmpty || isTheSamePlayer(entry.profile)) {
+                            continue
+                        }
+
+                        if (isADuplicate(entry.profile)) {
+                            confirmedBotList.add(entry.profile.id)
+                            continue
+                        }
+
+                        suspiciousPlayerList.add(entry.profile.id)
                     }
-
-                    if (isADuplicate(entry.profile)) {
-                        event.cancelEvent()
-                        notification("AntiBot", "Removed ${entry.profile.name}", NotificationEvent.Severity.INFO)
-                        continue
-                    }
-
-                    pName = entry.profile.name
                 }
+                PlayerListS2CPacket.Action.REMOVE_PLAYER -> {
+                    for (entry in packet.entries) {
+                        if (!suspiciousPlayerList.contains(entry.profile.id)) {
+                            continue
+                        }
+
+                        suspiciousPlayerList.remove(entry.profile.id)
+                    }
+                }
+                else -> {}
             }
         }
 
         val repeatable = repeatable {
-            if (pName == null) {
+            if (suspiciousPlayerList.isEmpty()) {
                 return@repeatable
             }
 
-            for (entity in world.entities) {
-                if (entity is PlayerEntity && entity.entityName == pName) {
-                    if (isArmored(entity) && entity.gameProfile.properties.isEmpty) {
-                        world.removeEntity(entity.id, Entity.RemovalReason.DISCARDED)
-                        notification("AntiBot", "Removed $pName", NotificationEvent.Severity.INFO)
-                    }
-                    pName = null
+            for (otherPlayer in world.players) {
+                if (!suspiciousPlayerList.contains(otherPlayer.uuid)) {
+                    continue
                 }
+
+                if (isFullyArmored(otherPlayer) && otherPlayer.gameProfile.properties.isEmpty) {
+                    confirmedBotList.add(otherPlayer.uuid)
+                }
+
+                suspiciousPlayerList.remove(otherPlayer.uuid)
             }
         }
 
@@ -90,11 +108,11 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
             return network.playerList.count { it.profile.name == profile.name && it.profile.id != profile.id } == 1
         }
 
-        private fun isArmored(entity: PlayerEntity): Boolean {
+        private fun isFullyArmored(entity: PlayerEntity): Boolean {
             var count = 0
             for (slot in 0..3) {
-                if (entity.inventory.getArmorStack(slot).item is ArmorItem &&
-                    !entity.inventory.getArmorStack(slot).hasEnchantments()
+                if (entity.inventory.getArmorStack(slot).item is ArmorItem && !entity.inventory.getArmorStack(slot)
+                        .hasEnchantments()
                 ) {
                     count += 1
                 }

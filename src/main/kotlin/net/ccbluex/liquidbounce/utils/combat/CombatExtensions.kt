@@ -22,6 +22,7 @@ import net.ccbluex.liquidbounce.config.ConfigSystem
 import net.ccbluex.liquidbounce.config.Configurable
 import net.ccbluex.liquidbounce.features.chat.Chat.tree
 import net.ccbluex.liquidbounce.features.misc.FriendManager
+import net.ccbluex.liquidbounce.features.module.modules.misc.ModuleAntiBot
 import net.ccbluex.liquidbounce.features.module.modules.misc.ModuleTeams
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
@@ -77,6 +78,10 @@ class EnemyConfigurable : Configurable("Enemies") {
         fun isBot(player: ClientPlayerEntity): Boolean {
             if (!enabled) {
                 return false
+            }
+
+            if (ModuleAntiBot.Matrix.isActive && ModuleAntiBot.Matrix.confirmedBotList.contains(player.uuid)) {
+                return true
             }
 
             return false

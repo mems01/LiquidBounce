@@ -177,6 +177,7 @@ object ModuleManager : Listenable, Iterable<Module> by modules {
             ModuleTrueSight,
             ModuleDerp,
             ModuleNoSlowBreak,
+            ModuleAntiBot
         )
 
         builtin.apply {
