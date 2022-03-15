@@ -159,10 +159,10 @@ public abstract class MixinMinecraftClient {
      */
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     private void hookScreen(Screen screen, CallbackInfo callbackInfo) {
-        final ScreenEvent event = new ScreenEvent(screen);
+        /*final ScreenEvent event = new ScreenEvent(screen);
         EventManager.INSTANCE.callEvent(event);
         if (event.isCancelled())
-            callbackInfo.cancel();
+            callbackInfo.cancel();*/
     }
 
     /**
