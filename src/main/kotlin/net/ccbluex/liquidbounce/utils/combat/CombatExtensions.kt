@@ -75,7 +75,7 @@ class EnemyConfigurable : Configurable("Enemies") {
         /**
          * Check if player might be a bot
          */
-        fun isBot(player: ClientPlayerEntity): Boolean {
+        fun isBot(player: PlayerEntity): Boolean {
             if (!enabled) {
                 return false
             }
