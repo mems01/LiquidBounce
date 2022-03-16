@@ -52,15 +52,13 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
         val confirmedBotList = ArrayList<UUID>()
 
         val packetHandler = handler<PacketEvent> {
-            val packet = it.packet
-
-            if (packet !is PlayerListS2CPacket) {
+            if (it.packet !is PlayerListS2CPacket) {
                 return@handler
             }
 
-            when (packet.action) {
+            when (it.packet.action) {
                 PlayerListS2CPacket.Action.ADD_PLAYER -> {
-                    for (entry in packet.entries) {
+                    for (entry in it.packet.entries) {
                         if (entry.latency < 2 || !entry.profile.properties.isEmpty || isTheSamePlayer(entry.profile)) {
                             continue
                         }
@@ -74,12 +72,14 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                     }
                 }
                 PlayerListS2CPacket.Action.REMOVE_PLAYER -> {
-                    for (entry in packet.entries) {
-                        if (!suspiciousPlayerList.contains(entry.profile.id)) {
-                            continue
+                    for (entry in it.packet.entries) {
+                        if (suspiciousPlayerList.contains(entry.profile.id)) {
+                            suspiciousPlayerList.remove(entry.profile.id)
                         }
 
-                        suspiciousPlayerList.remove(entry.profile.id)
+                        if (confirmedBotList.contains(entry.profile.id)) {
+                            confirmedBotList.remove(entry.profile.id)
+                        }
                     }
                 }
                 else -> {}
