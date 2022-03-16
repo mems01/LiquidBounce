@@ -38,7 +38,7 @@ import kotlin.math.sqrt
  * Configurable to configure the dynamic rotation engine
  */
 class RotationsConfigurable : Configurable("Rotations") {
-    val turnSpeed by curve("TurnSpeed", arrayOf(4f, 7f, 10f, 3f, 2f, 0.7f))
+    val turnSpeed by floatRange("TurnSpeed", 60f..80f, 1f..180f)
     val fixVelocity by boolean("FixVelocity", true)
 }
 
@@ -276,7 +276,8 @@ object RotationManager : Listenable {
         }
 
         // Update rotations
-        val turnSpeed = 180f // todo: use config
+        val speed = this.activeConfigurable?.turnSpeed ?: return
+        val turnSpeed = speed.start + (speed.endInclusive - speed.start) * Math.random().toFloat()
 
         val playerRotation = Rotation(mc.player!!.yaw, mc.player!!.pitch)
 
