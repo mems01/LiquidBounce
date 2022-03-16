@@ -38,7 +38,7 @@ import kotlin.math.sqrt
  * Configurable to configure the dynamic rotation engine
  */
 class RotationsConfigurable : Configurable("Rotations") {
-    val turnSpeed by floatRange("TurnSpeed", 60f..80f, 1f..180f)
+    val turnSpeed by floatRange("TurnSpeed", 180f..180f, 1f..180f)
     val fixVelocity by boolean("FixVelocity", true)
 }
 
@@ -93,9 +93,9 @@ object RotationManager : Listenable {
         var visibleRot: VecRotation? = null
         var notVisibleRot: VecRotation? = null
 
-        for (x in 0.0..1.0 step 0.1) {
-            for (y in 0.0..1.0 step 0.1) {
-                for (z in 0.0..1.0 step 0.1) {
+        for (x in 0.0..1.0 step 0.05) {
+            for (y in 0.0..1.0 step 0.05) {
+                for (z in 0.0..1.0 step 0.05) {
                     val vec3 = Vec3d(
                         box.minX + (box.maxX - box.minX) * x,
                         box.minY + (box.maxY - box.minY) * y,
