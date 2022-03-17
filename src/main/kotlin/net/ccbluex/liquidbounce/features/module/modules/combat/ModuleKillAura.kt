@@ -30,12 +30,11 @@ import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.facingEnemy
 import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
-import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
-import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
 import net.ccbluex.liquidbounce.utils.combat.TargetTracker
 import net.ccbluex.liquidbounce.utils.combat.shouldBeAttacked
+import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
 import net.ccbluex.liquidbounce.utils.entity.eyesPos
 import net.ccbluex.liquidbounce.utils.entity.squaredBoxedDistanceTo
 import net.ccbluex.liquidbounce.utils.entity.wouldBlockHit
@@ -53,8 +52,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
-import kotlin.math.round
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
@@ -86,15 +83,13 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     // Rotation
     private val rotations = tree(RotationsConfigurable())
 
-    // Targets
-    private val combatConfigurable = tree(EnemyConfigurable())
-
     // Predict
     private val predict by floatRange("Predict", 0f..0f, 0f..5f)
 
     // Bypass techniques
     private val swing by boolean("Swing", true)
     private val keepSprint by boolean("KeepSprint", true)
+    private val unsprintOnCrit by boolean("UnsprintOnCrit", true)
     private val attackShielding by boolean("AttackShielding", false)
 
     private val blockingTicks by int("BlockingTicks", 0, 0..20)
@@ -174,19 +169,19 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         // Did you ever send a rotation before?
         val rotation = RotationManager.serverRotation ?: return@repeatable
 
-        if (target.squaredBoxedDistanceTo(player) <= range * range && facingEnemy(target, range.toDouble(), rotation)) {
+        if (target.boxedDistanceTo(player) <= range && facingEnemy(target, range.toDouble(), rotation)) {
             // Check if between enemy and player is another entity
             val raycastedEntity = raytraceEntity(range.toDouble(), rotation, filter = {
                 when (raycast) {
                     TRACE_NONE -> false
-                    TRACE_ONLYENEMY -> it.shouldBeAttacked(combatConfigurable)
+                    TRACE_ONLYENEMY -> it.shouldBeAttacked()
                     TRACE_ALL -> true
                 }
             }) ?: target
 
             // Swap enemy if there is a better enemy
             // todo: compare current target to locked target
-            if (raycastedEntity.shouldBeAttacked(combatConfigurable) && raycastedEntity != target) {
+            if (raycastedEntity.shouldBeAttacked() && raycastedEntity != target) {
                 targetTracker.lock(raycastedEntity)
             }
 
@@ -262,13 +257,13 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         val eyes = player.eyesPos
 
         val scanRange = if (targetTracker.maxDistanceSquared > rangeSquared) {
-            (range + scanExtraRange).toDouble()
+            ((range + scanExtraRange) * (range + scanExtraRange)).toDouble()
         } else {
-            range.toDouble()
+            rangeSquared.toDouble()
         }
 
         for (target in targetTracker.enemies()) {
-            if (target.squaredBoxedDistanceTo(player) > scanRange * scanRange) {
+            if (target.squaredBoxedDistanceTo(player) > scanRange) {
                 continue
             }
 
@@ -289,10 +284,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
                 eyes.add(playerPrediction), box, range = scanRange, wallsRange = wallRange.toDouble()
             ) ?: continue
 
-            if (keepSprint) {
-                chat(target.squaredBoxedDistanceTo(player).toString())
-            }
-
             // lock on target tracker
             targetTracker.lock(target)
 
@@ -303,6 +294,11 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     }
 
     private fun attackEntity(entity: Entity) {
+        if (ModuleCriticals.wouldCrit(true) && unsprintOnCrit) {
+            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.STOP_SPRINTING))
+            player.isSprinting = false
+        }
+
         EventManager.callEvent(AttackEvent(entity))
 
         // Swing before attacking (on 1.8)
