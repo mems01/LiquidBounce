@@ -89,7 +89,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     // Bypass techniques
     private val swing by boolean("Swing", true)
     private val keepSprint by boolean("KeepSprint", true)
-    private val unsprintOnCrit by boolean("UnsprintOnCrit", true)
     private val attackShielding by boolean("AttackShielding", false)
 
     private val blockingTicks by int("BlockingTicks", 0, 0..20)
@@ -294,11 +293,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     }
 
     private fun attackEntity(entity: Entity) {
-        if (ModuleCriticals.wouldCrit(true) && unsprintOnCrit) {
-            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.STOP_SPRINTING))
-            player.isSprinting = false
-        }
-
         EventManager.callEvent(AttackEvent(entity))
 
         // Swing before attacking (on 1.8)
