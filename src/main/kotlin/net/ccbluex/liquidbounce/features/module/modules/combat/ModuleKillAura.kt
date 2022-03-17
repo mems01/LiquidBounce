@@ -32,6 +32,7 @@ import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
+import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
 import net.ccbluex.liquidbounce.utils.combat.TargetTracker
 import net.ccbluex.liquidbounce.utils.combat.shouldBeAttacked
 import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
@@ -79,6 +80,9 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
     // Target
     private val targetTracker = tree(TargetTracker())
+
+    // Targets
+    private val comb = tree(EnemyConfigurable())
 
     // Rotation
     private val rotations = tree(RotationsConfigurable())
@@ -173,14 +177,14 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             val raycastedEntity = raytraceEntity(range.toDouble(), rotation, filter = {
                 when (raycast) {
                     TRACE_NONE -> false
-                    TRACE_ONLYENEMY -> it.shouldBeAttacked()
+                    TRACE_ONLYENEMY -> it.shouldBeAttacked(enemyConf = comb)
                     TRACE_ALL -> true
                 }
             }) ?: target
 
             // Swap enemy if there is a better enemy
             // todo: compare current target to locked target
-            if (raycastedEntity.shouldBeAttacked() && raycastedEntity != target) {
+            if (raycastedEntity.shouldBeAttacked(enemyConf = comb) && raycastedEntity != target) {
                 targetTracker.lock(raycastedEntity)
             }
 
