@@ -33,7 +33,7 @@ import net.minecraft.world.RaycastContext
 fun raytraceEntity(range: Double, rotation: Rotation, filter: (Entity) -> Boolean): Entity? {
     val entity = mc.cameraEntity ?: return null
 
-    val cameraVec = entity.getCameraPosVec(1f)
+    val cameraVec = entity.getCameraPosVec(mc.tickDelta)
     val rotationVec = rotation.rotationVec
 
     val vec3d3 = cameraVec.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
