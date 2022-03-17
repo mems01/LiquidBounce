@@ -281,9 +281,15 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
             val box = target.boundingBox.offset(targetPrediction)
 
+            val bestRange = if (target.squaredBoxedDistanceTo(player) > rangeSquared) {
+                scanRange
+            } else {
+                range.toDouble()
+            }
+
             // find best spot (and skip if no spot was found)
             val (rotation, _) = RotationManager.raytraceBox(
-                eyes.add(playerPrediction), box, range = scanRange, wallsRange = wallRange.toDouble()
+                eyes.add(playerPrediction), box, range = bestRange, wallsRange = wallRange.toDouble()
             ) ?: continue
 
             // lock on target tracker
