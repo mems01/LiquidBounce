@@ -30,7 +30,6 @@ import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.facingEnemy
 import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
-import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
 import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
@@ -53,7 +52,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
-import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
@@ -261,13 +259,13 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         val eyes = player.eyesPos
 
         val scanRange = if (targetTracker.maxDistanceSquared > rangeSquared) {
-            ((range + scanExtraRange) * (range + scanExtraRange)).toDouble()
+            (range + scanExtraRange).toDouble()
         } else {
-            rangeSquared.toDouble()
+            range.toDouble()
         }
 
         for (target in targetTracker.enemies()) {
-            if (target.squaredBoxedDistanceTo(player) > scanRange) {
+            if (target.squaredBoxedDistanceTo(player) > scanRange * scanRange) {
                 continue
             }
 
@@ -285,9 +283,8 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
             // find best spot (and skip if no spot was found)
             val (rotation, _) = RotationManager.raytraceBox(
-                eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
+                eyes.add(playerPrediction), box, range = scanRange, wallsRange = wallRange.toDouble()
             ) ?: continue
-            chat("$scanRange and ${sqrt(scanRange)}")
 
             // lock on target tracker
             targetTracker.lock(target)
