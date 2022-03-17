@@ -30,6 +30,7 @@ import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.facingEnemy
 import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
 import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
@@ -286,6 +287,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             val (rotation, _) = RotationManager.raytraceBox(
                 eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
             ) ?: continue
+            chat("$scanRange and ${sqrt(scanRange)}")
 
             // lock on target tracker
             targetTracker.lock(target)
