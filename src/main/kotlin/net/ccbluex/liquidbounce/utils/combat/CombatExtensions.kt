@@ -61,33 +61,6 @@ class EnemyConfigurable : Configurable("Enemies") {
     // Friends (client friends - other players) should be also considered as enemy
     val teamMates by boolean("TeamMates", false)
 
-    // Should bots be blocked to bypass anti cheat techniques
-    val antibot = tree(AntiBotConfigurable())
-
-    class AntiBotConfigurable : Configurable("AntiBot") {
-
-        /**
-         * Should always be active. A good antibot should never detect a real player as a bot (on default settings).
-         */
-        val active by boolean("Active", true)
-
-        /**
-         * Check if player might be a bot
-         */
-        fun isBot(player: PlayerEntity): Boolean {
-            if (!active) {
-                return false
-            }
-
-            if (ModuleAntiBot.Matrix.isActive && ModuleAntiBot.Matrix.confirmedBotList.contains(player.uuid)) {
-                return true
-            }
-
-            return false
-        }
-
-    }
-
     init {
         ConfigSystem.root(this)
     }
@@ -111,7 +84,7 @@ class EnemyConfigurable : Configurable("Enemies") {
                     }
 
                     // Check if player might be a bot
-                    if (antibot.isBot(suspect)) {
+                    if (ModuleAntiBot.isBot(suspect)) {
                         return false
                     }
 

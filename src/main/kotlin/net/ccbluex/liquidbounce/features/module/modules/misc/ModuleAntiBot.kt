@@ -44,12 +44,17 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
         // Basically a multiple antibot option dependent mode.
     }
 
-    object Matrix : Choice("Matrix") {
+    private object Matrix : Choice("Matrix") {
         override val parent: ChoiceConfigurable
             get() = modes
 
-        private val suspiciousPlayerList = ArrayList<UUID>()
-        val confirmedBotList = ArrayList<UUID>()
+        private val suspectList = ArrayList<UUID>()
+        val botList = ArrayList<UUID>()
+
+        override fun disable() {
+            suspectList.clear()
+            botList.clear()
+        }
 
         val packetHandler = handler<PacketEvent> {
             if (it.packet !is PlayerListS2CPacket) {
@@ -64,21 +69,21 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         }
 
                         if (isADuplicate(entry.profile)) {
-                            confirmedBotList.add(entry.profile.id)
+                            botList.add(entry.profile.id)
                             continue
                         }
 
-                        suspiciousPlayerList.add(entry.profile.id)
+                        suspectList.add(entry.profile.id)
                     }
                 }
                 PlayerListS2CPacket.Action.REMOVE_PLAYER -> {
                     for (entry in it.packet.entries) {
-                        if (suspiciousPlayerList.contains(entry.profile.id)) {
-                            suspiciousPlayerList.remove(entry.profile.id)
+                        if (suspectList.contains(entry.profile.id)) {
+                            suspectList.remove(entry.profile.id)
                         }
 
-                        if (confirmedBotList.contains(entry.profile.id)) {
-                            confirmedBotList.remove(entry.profile.id)
+                        if (botList.contains(entry.profile.id)) {
+                            botList.remove(entry.profile.id)
                         }
                     }
                 }
@@ -87,20 +92,20 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
         }
 
         val repeatable = repeatable {
-            if (suspiciousPlayerList.isEmpty()) {
+            if (suspectList.isEmpty()) {
                 return@repeatable
             }
 
             for (entity in world.players) {
-                if (!suspiciousPlayerList.contains(entity.uuid)) {
+                if (!suspectList.contains(entity.uuid)) {
                     continue
                 }
 
                 if (isFullyArmored(entity) && entity.gameProfile.properties.isEmpty) {
-                    confirmedBotList.add(entity.uuid)
+                    botList.add(entity.uuid)
                 }
 
-                suspiciousPlayerList.remove(entity.uuid)
+                suspectList.remove(entity.uuid)
             }
         }
 
@@ -124,5 +129,20 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
             // Prevents false positives when a player is on a minigame such as Practice and joins a duel
             return network.playerList.count { it.profile.name == profile.name && it.profile.id == profile.id } == 1
         }
+    }
+
+    /**
+     * Check if player might be a bot
+     */
+    fun isBot(player: PlayerEntity): Boolean {
+        if (!enabled) {
+            return false
+        }
+
+        if (Matrix.isActive && Matrix.botList.contains(player.uuid)) {
+            return true
+        }
+
+        return false
     }
 }

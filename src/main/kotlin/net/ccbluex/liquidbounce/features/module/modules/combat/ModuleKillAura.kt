@@ -52,6 +52,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
@@ -283,7 +284,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
             // find best spot (and skip if no spot was found)
             val (rotation, _) = RotationManager.raytraceBox(
-                eyes.add(playerPrediction), box, range = scanRange, wallsRange = wallRange.toDouble()
+                eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
             ) ?: continue
 
             // lock on target tracker
