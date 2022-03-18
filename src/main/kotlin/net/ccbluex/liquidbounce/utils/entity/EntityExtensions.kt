@@ -18,7 +18,9 @@
  */
 package net.ccbluex.liquidbounce.utils.entity
 
+import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoJumpDelay
 import net.ccbluex.liquidbounce.render.engine.Vec3
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
@@ -145,7 +147,7 @@ fun getNearestPoint(eyes: Vec3d, box: Box): Vec3d {
     for (i in 0..2) {
         if (origin[i] > destMaxs[i]) {
             origin[i] = destMaxs[i]
-        } else if (origin[i] <= destMins[i]) {
+        } else if (origin[i] < destMins[i]) {
             origin[i] = destMins[i]
         }
     }
@@ -160,10 +162,14 @@ fun PlayerEntity.wouldBlockHit(source: PlayerEntity): Boolean {
 
     val vec3d = source.pos
 
-    val facingVec = getRotationVec(1.0f)
+    val facingVec = this.getRotationVec(1.0f)
     var deltaPos = vec3d.subtract(pos).normalize()
 
     deltaPos = Vec3d(deltaPos.x, 0.0, deltaPos.z)
+
+    if (ModuleNoJumpDelay.enabled) {
+        chat(deltaPos.dotProduct(facingVec).toString())
+    }
 
     return deltaPos.dotProduct(facingVec) < 0.0
 }

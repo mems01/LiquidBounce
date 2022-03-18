@@ -33,19 +33,14 @@ import net.minecraft.world.RaycastContext
 fun raytraceEntity(range: Double, rotation: Rotation, filter: (Entity) -> Boolean): Entity? {
     val entity = mc.cameraEntity ?: return null
 
-    val cameraVec = entity.getCameraPosVec(1.0f)
+    val cameraVec = entity.getCameraPosVec(1f)
     val rotationVec = rotation.rotationVec
 
     val vec3d3 = cameraVec.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
     val box = entity.boundingBox.stretch(rotationVec.multiply(range)).expand(1.0, 1.0, 1.0)
 
     val entityHitResult = ProjectileUtil.raycast(
-        entity,
-        cameraVec,
-        vec3d3,
-        box,
-        { !it.isSpectator && it.collides() && filter(it) },
-        range * range
+        entity, cameraVec, vec3d3, box, { !it.isSpectator && it.collides() && filter(it) }, range * range
     )
 
     return entityHitResult?.entity
@@ -60,11 +55,7 @@ fun raytraceBlock(range: Double, rotation: Rotation, pos: BlockPos, state: Block
     val end = start.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
 
     return mc.world!!.raycastBlock(
-        start,
-        end,
-        pos,
-        state.getOutlineShape(mc.world, pos, ShapeContext.of(mc.player)),
-        state
+        start, end, pos, state.getOutlineShape(mc.world, pos, ShapeContext.of(mc.player)), state
     )
 }
 
@@ -78,11 +69,7 @@ fun raycast(range: Double, rotation: Rotation): BlockHitResult? {
 
     return mc.world!!.raycast(
         RaycastContext(
-            start,
-            end,
-            RaycastContext.ShapeType.OUTLINE,
-            RaycastContext.FluidHandling.NONE,
-            mc.cameraEntity!!
+            start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mc.cameraEntity!!
         )
     )
 }
@@ -92,11 +79,7 @@ fun raycast(range: Double, rotation: Rotation): BlockHitResult? {
  */
 fun isVisible(eyes: Vec3d, vec3: Vec3d) = mc.world?.raycast(
     RaycastContext(
-        eyes,
-        vec3,
-        RaycastContext.ShapeType.COLLIDER,
-        RaycastContext.FluidHandling.NONE,
-        mc.player
+        eyes, vec3, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player
     )
 )?.type == HitResult.Type.MISS
 
@@ -113,11 +96,7 @@ fun facingEnemy(enemy: Entity, range: Double, rotation: Rotation): Boolean {
 fun facingBlock(eyes: Vec3d, vec3: Vec3d, blockPos: BlockPos, expectedSide: Direction? = null): Boolean {
     val searchedPos = mc.world?.raycast(
         RaycastContext(
-            eyes,
-            vec3,
-            RaycastContext.ShapeType.COLLIDER,
-            RaycastContext.FluidHandling.NONE,
-            mc.player
+            eyes, vec3, RaycastContext.ShapeType.COLLIDER, RaycastContext.FluidHandling.NONE, mc.player
         )
     ) ?: return false
 
