@@ -28,8 +28,8 @@ import net.ccbluex.liquidbounce.utils.aiming.RotationManager
 import net.ccbluex.liquidbounce.utils.aiming.applyRotation
 import net.ccbluex.liquidbounce.utils.combat.PriorityEnum
 import net.ccbluex.liquidbounce.utils.combat.TargetTracker
-import net.ccbluex.liquidbounce.utils.entity.boxedDistanceTo
 import net.ccbluex.liquidbounce.utils.entity.eyesPos
+import net.ccbluex.liquidbounce.utils.entity.squaredBoxedDistanceTo
 
 /**
  * Aimbot module
@@ -49,7 +49,7 @@ object ModuleAimbot : Module("Aimbot", Category.COMBAT) {
         val eyes = player.eyesPos
 
         for (target in targetTracker.enemies()) {
-            if (target.boxedDistanceTo(player) > range) {
+            if (target.squaredBoxedDistanceTo(player) > range * range) {
                 continue
             }
 
@@ -63,7 +63,7 @@ object ModuleAimbot : Module("Aimbot", Category.COMBAT) {
                     ?: continue
 
                 currentRotation = rotation
-                return@repeatable
+                break
             }
         }
 

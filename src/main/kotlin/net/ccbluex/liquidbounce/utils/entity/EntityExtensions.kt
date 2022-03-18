@@ -145,7 +145,7 @@ fun getNearestPoint(eyes: Vec3d, box: Box): Vec3d {
     for (i in 0..2) {
         if (origin[i] > destMaxs[i]) {
             origin[i] = destMaxs[i]
-        } else if (origin[i] < destMins[i]) {
+        } else if (origin[i] <= destMins[i]) {
             origin[i] = destMins[i]
         }
     }

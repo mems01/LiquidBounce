@@ -44,7 +44,7 @@ public class MixinCommandSuggestor {
 
     @Shadow
     @Final
-    private TextFieldWidget textField;
+    TextFieldWidget textField;
 
     @Shadow
     private CompletableFuture<Suggestions> pendingSuggestions;
