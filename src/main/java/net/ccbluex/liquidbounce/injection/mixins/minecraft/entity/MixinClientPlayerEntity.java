@@ -147,6 +147,20 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook silent rotations
      */
+    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastYaw:F", ordinal = 0, shift = At.Shift.BEFORE))
+    private void hookLastSilentRotations(CallbackInfo ci) {
+        Rotation rotation = RotationManager.INSTANCE.getServerRotation();
+        if (rotation == null) {
+            return;
+        }
+
+        this.lastYaw = rotation.getYaw();
+        this.lastPitch = rotation.getPitch();
+    }
+
+    /**
+     * Hook silent rotations
+     */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), name = "bl3")
     private boolean hookSilentRotations(boolean value) {
         updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
