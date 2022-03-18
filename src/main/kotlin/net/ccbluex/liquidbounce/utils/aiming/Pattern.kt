@@ -58,7 +58,7 @@ object GaussianPattern : Pattern {
     private var nextSpot = gaussianVec
 
     private const val STANDING_CHANCE: Double = 0.91
-    private const val MOVING_CHANCE: Double = 0.87
+    private const val MOVING_CHANCE: Double = 0.32
 
     private const val SPEED_HORIZONTAL_LIMITER: Double = 0.04
     private const val SPEED_VERTICAL_LIMITER: Double = 0.0787
@@ -99,9 +99,9 @@ object GaussianPattern : Pattern {
     }
 
     override fun spot(box: Box) = Vec3d(
-        box.minX + ((box.maxX - box.minX) * spot.x),
-        box.minY + ((box.maxY - box.minY) * spot.y),
-        box.minZ + ((box.maxZ - box.minZ) * spot.z)
+        box.minX + (box.maxX - box.minX) * spot.x,
+        box.minY + (box.maxY - box.minY) * spot.y,
+        box.minZ + (box.maxZ - box.minZ) * spot.z
     )
 
 }
