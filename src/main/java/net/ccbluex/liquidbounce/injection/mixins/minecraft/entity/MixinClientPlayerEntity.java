@@ -167,6 +167,11 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
                 return;
             }
 
+            currRotation = currRotation.fixedSensitivity();
+            if (currRotation == null) {
+                return;
+            }
+
             this.lastYaw = currRotation.getYaw();
             this.lastPitch = currRotation.getPitch();
         }
