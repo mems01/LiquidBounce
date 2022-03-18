@@ -163,7 +163,7 @@ fun PlayerEntity.wouldBlockHit(source: PlayerEntity): Boolean {
     val vec3d = source.pos
 
     val facingVec = this.getRotationVec(1.0f)
-    var deltaPos = vec3d.subtract(pos).normalize()
+    var deltaPos = vec3d.relativize(pos).normalize()
 
     deltaPos = Vec3d(deltaPos.x, 0.0, deltaPos.z)
 
