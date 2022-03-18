@@ -53,7 +53,7 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
-import java.lang.StrictMath.sqrt
+import kotlin.math.sqrt
 import kotlin.random.Random
 
 /**
