@@ -264,7 +264,7 @@ object RotationManager : Listenable {
     /**
      * Update current rotation to new rotation step
      */
-    private fun update() {
+    fun update() {
         // Update reset ticks
         if (ticksUntilReset > 0) {
             ticksUntilReset--
@@ -298,9 +298,6 @@ object RotationManager : Listenable {
     }
 
     fun needsUpdate(lastYaw: Float, lastPitch: Float): Boolean {
-        // Update current rotation
-        update()
-
         // Check if something changed
         val (currYaw, currPitch) = currentRotation?.fixedSensitivity() ?: return false
 
