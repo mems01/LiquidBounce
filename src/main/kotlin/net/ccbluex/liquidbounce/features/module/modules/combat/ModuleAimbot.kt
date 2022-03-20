@@ -63,7 +63,7 @@ object ModuleAimbot : Module("Aimbot", Category.COMBAT) {
                     ?: continue
 
                 currentRotation = rotation
-                break
+                return@repeatable
             }
         }
 
