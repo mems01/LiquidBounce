@@ -47,7 +47,7 @@ class EnemyConfigurable : Configurable("Enemies") {
     val mobs by boolean("Mobs", true)
 
     // Animals (like cows, pigs and so on) should be considered as a enemy
-    val animals by boolean("Animals", false)
+    val animals by boolean("Animals", true)
 
     // Invisible entities should be also considered as a enemy
     var invisible by boolean("Invisible", true)
@@ -90,7 +90,7 @@ class EnemyConfigurable : Configurable("Enemies") {
 
                     return players
                 } else if (suspect is PassiveEntity) {
-                    return false
+                    return animals
                 } else if (suspect is MobEntity) {
                     return mobs
                 }
