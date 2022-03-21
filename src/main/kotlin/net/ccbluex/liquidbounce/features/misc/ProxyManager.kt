@@ -48,10 +48,10 @@ object ProxyManager : Configurable("Proxies") {
             try {
                 channel.config().setOption(ChannelOption.TCP_NODELAY, true)
             } catch (var3: ChannelException) {
+                net.ccbluex.liquidbounce.utils.client.logger.info(var3.printStackTrace())
             }
 
-            val p = channel.pipeline()
-                .addLast("timeout", ReadTimeoutHandler(30) as ChannelHandler)
+            val p = channel.pipeline().addLast("timeout", ReadTimeoutHandler(30) as ChannelHandler)
                 .addLast("splitter", SplitterHandler() as ChannelHandler)
                 .addLast("decoder", DecoderHandler(NetworkSide.CLIENTBOUND) as ChannelHandler)
                 .addLast("prepender", SizePrepender() as ChannelHandler)
@@ -61,8 +61,7 @@ object ProxyManager : Configurable("Proxies") {
             val proxy = currentProxy
             if (proxy != null) {
                 p.addFirst(
-                    "proxy",
-                    if (proxy.credentials != null) {
+                    "proxy", if (proxy.credentials != null) {
                         Socks5ProxyHandler(proxy.address, proxy.credentials.username, proxy.credentials.password)
                     } else {
                         Socks5ProxyHandler(proxy.address)
