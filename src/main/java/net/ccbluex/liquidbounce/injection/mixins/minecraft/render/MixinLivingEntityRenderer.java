@@ -39,19 +39,19 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntityRenderer.class)
 public class MixinLivingEntityRenderer<T extends LivingEntity> {
 
-    private final ThreadLocal<Rotation> currentRotation = ThreadLocal.withInitial(() -> null);
+    private final ThreadLocal<Rotation> serverRotation = ThreadLocal.withInitial(() -> null);
 
     @Inject(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At("HEAD"))
     private void injectRender(T livingEntity, float f, float g, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, CallbackInfo ci) {
-        Rotation currentRotation = RotationManager.INSTANCE.getCurrentRotation();
         Rotation serverRotation = RotationManager.INSTANCE.getServerRotation();
+        Rotation currentRotation = RotationManager.INSTANCE.getCurrentRotation();
 
         if (!ModuleRotations.INSTANCE.getEnabled() || livingEntity != MinecraftClient.getInstance().player || currentRotation == null || serverRotation == null) {
-            this.currentRotation.set(null);
+            this.serverRotation.set(null);
             return;
         }
 
-        this.currentRotation.set(currentRotation);
+        this.serverRotation.set(serverRotation);
     }
 
     /**
@@ -62,7 +62,7 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
      */
     @Redirect(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerpAngleDegrees(FFF)F", ordinal = 0))
     private float injectRotationsA(float g, float f, float s) {
-        Rotation rot = currentRotation.get();
+        Rotation rot = serverRotation.get();
         if (rot != null) {
             return MathHelper.lerpAngleDegrees(g, rot.getYaw(), rot.getYaw());
         } else {
@@ -78,7 +78,7 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
      */
     @Redirect(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerpAngleDegrees(FFF)F", ordinal = 1))
     private float injectRotationsB(float g, float f, float s) {
-        Rotation rot = currentRotation.get();
+        Rotation rot = serverRotation.get();
         if (rot != null) {
             return MathHelper.lerpAngleDegrees(g, rot.getYaw(), rot.getYaw());
         } else {
@@ -93,7 +93,7 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
      */
     @Redirect(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerp(FFF)F", ordinal = 0))
     private float injectRotationsC(float g, float f, float s) {
-        Rotation rot = currentRotation.get();
+        Rotation rot = serverRotation.get();
         if (rot != null) {
             return MathHelper.lerp(g, rot.getPitch(), rot.getPitch());
         } else {
