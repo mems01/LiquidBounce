@@ -148,7 +148,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
      * Hook silent rotations
      */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
-    private boolean hookSilentRotations(boolean bl4) {
+    private boolean hookSilentRotationsCheck(boolean bl4) {
         updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
         return (bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent;
     }
@@ -157,7 +157,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
      * Hook silent rotations
      */
     @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
-    private void hookSilentRotationsUpdate(CallbackInfo ci) {
+    private void hookLastSilentRotations(CallbackInfo ci) {
         if (updatedSilent) {
             updatedSilent = false;
 
@@ -177,7 +177,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     }
 
     @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastOnGround:Z", ordinal = 1, shift = At.Shift.BEFORE))
-    private void hookSilentRotationsUfpdate(CallbackInfo ci) {
+    private void hookSilentRotationsUpdate(CallbackInfo ci) {
         if (RotationManager.INSTANCE.getCurrentRotation() == null) {
             return;
         }
