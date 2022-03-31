@@ -166,8 +166,6 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
     @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;isSpectator()Z", shift = At.Shift.BEFORE))
     private void hookNoClip(CallbackInfo ci) {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
-        final PlayerPushOutEvent pushOutEvent = new PlayerPushOutEvent();
-        EventManager.INSTANCE.callEvent(pushOutEvent);
-        this.noClip = player != null && player.noClip || pushOutEvent.isCancelled();
+        this.noClip = player != null && player.noClip;
     }
 }
