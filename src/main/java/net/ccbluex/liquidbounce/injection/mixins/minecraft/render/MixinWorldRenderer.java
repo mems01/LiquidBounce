@@ -36,6 +36,8 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import static net.ccbluex.liquidbounce.render.utils.ColorUtilsKt.rainbow;
+
 @Mixin(WorldRenderer.class)
 public abstract class MixinWorldRenderer {
     @Shadow
@@ -45,7 +47,16 @@ public abstract class MixinWorldRenderer {
     @Shadow
     protected abstract void renderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers);
 
-    @Inject(method = "loadEntityOutlineShader", at = @At("RETURN"))
+    @Inject(method = "render", at = @At("HEAD"))
+    private void hookRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
+        try {
+            OutlineShader.INSTANCE.beginInternal();
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Inject(method = "loadEntityOutlineShader", at = @At("TAIL"))
     private void onLoadEntityOutlineShader(CallbackInfo info) {
         try {
             OutlineShader.INSTANCE.load();
@@ -67,7 +78,7 @@ public abstract class MixinWorldRenderer {
 
             this.entityOutlinesFramebuffer = outlineShader.getFramebuffer();
 
-            outlineShader.begin(ModuleESP.OutlineMode.INSTANCE.getWidth(), color != null ? color : ModuleESP.INSTANCE.getBaseColor());
+            outlineShader.begin(ModuleESP.OutlineMode.INSTANCE.getWidth(), rainbow());
             outlineShader.setDirty();
 
             RenderingFlags.isCurrentlyRenderingEntityOutline().set(true);
@@ -84,19 +95,16 @@ public abstract class MixinWorldRenderer {
 
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/render/OutlineVertexConsumerProvider;draw()V"))
     private void onDrawOutlines(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f matrix4f, CallbackInfo info) {
-        if (!ModuleESP.INSTANCE.getEnabled() || !ModuleESP.OutlineMode.INSTANCE.isActive())
-            return;
+        if (!ModuleESP.INSTANCE.getEnabled() || !ModuleESP.OutlineMode.INSTANCE.isActive()) return;
 
         OutlineShader.INSTANCE.end(tickDelta);
     }
 
     @Inject(method = "drawEntityOutlinesFramebuffer", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gl/Framebuffer;draw(IIZ)V"))
     private void onDrawEntityOutlinesFramebuffer(CallbackInfo info) {
-        if (!ModuleESP.INSTANCE.getEnabled() || !ModuleESP.OutlineMode.INSTANCE.isActive())
-            return;
+        if (!ModuleESP.INSTANCE.getEnabled() || !ModuleESP.OutlineMode.INSTANCE.isActive()) return;
 
-        if (OutlineShader.INSTANCE.isDirty())
-            OutlineShader.INSTANCE.drawFramebuffer();
+        if (OutlineShader.INSTANCE.isDirty()) OutlineShader.INSTANCE.drawFramebuffer();
     }
 
     @Inject(method = "onResized", at = @At("HEAD"))

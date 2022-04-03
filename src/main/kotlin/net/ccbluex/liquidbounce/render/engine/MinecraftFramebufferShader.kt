@@ -57,7 +57,7 @@ abstract class MinecraftFramebufferShader(private val shaderName: String) {
         this.shaderEffect = null
     }
 
-    protected fun beginInternal() {
+    fun beginInternal() {
         // Clear the buffer if it is dirty
         if (this.isDirty) {
             assureLoaded(framebuffer).clear(MinecraftClient.IS_SYSTEM_MAC)
