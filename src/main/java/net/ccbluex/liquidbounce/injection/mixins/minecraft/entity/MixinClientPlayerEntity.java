@@ -63,7 +63,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook entity tick event
      */
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V", shift = At.Shift.AFTER))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V", shift = At.Shift.BEFORE))
     private void hookTickEvent(CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new PlayerTickEvent());
     }
@@ -85,9 +85,9 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     }
 
     /**
-     * Hook entity movement tick event at RETURN and call out POST tick movement event
+     * Hook entity movement tick event at TAIL and call out POST tick movement event
      */
-    @Inject(method = "sendMovementPackets", at = @At("RETURN"))
+    @Inject(method = "sendMovementPackets", at = @At("TAIL"))
     private void hookMovementPost(CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new PlayerNetworkMovementTickEvent(EventState.POST));
     }

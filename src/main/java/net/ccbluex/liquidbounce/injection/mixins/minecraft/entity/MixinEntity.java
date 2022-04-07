@@ -44,20 +44,6 @@ public abstract class MixinEntity {
     public abstract void setVelocity(Vec3d velocity);
 
     @Shadow
-    public abstract boolean isSprinting();
-
-    @Shadow
-    public boolean velocityDirty;
-
-    @Shadow
-    public abstract void setVelocity(double x, double y, double z);
-
-    @Shadow
-    public static Vec3d movementInputToVelocity(Vec3d movementInput, float speed, float yaw) {
-        return null;
-    }
-
-    @Shadow
     public abstract double getX();
 
     @Shadow
@@ -77,6 +63,11 @@ public abstract class MixinEntity {
 
     @Shadow
     public boolean noClip;
+
+    @Shadow
+    public static Vec3d movementInputToVelocity(Vec3d movementInput, float speed, float yaw) {
+        return null;
+    }
 
     /**
      * Hook entity margin modification event
@@ -101,14 +92,13 @@ public abstract class MixinEntity {
 
     @Redirect(method = "updateVelocity", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;movementInputToVelocity(Lnet/minecraft/util/math/Vec3d;FF)Lnet/minecraft/util/math/Vec3d;"))
     public Vec3d hookVelocity(Vec3d movementInput, float speed, float yaw) {
-        //noinspection ConstantConditions
-        if ((Object) this == MinecraftClient.getInstance().player) {
-            final PlayerVelocityStrafe event = new PlayerVelocityStrafe(movementInput, speed, yaw, movementInputToVelocity(movementInput, speed, yaw));
-            EventManager.INSTANCE.callEvent(event);
-            return event.getVelocity();
+        if ((Object) this != MinecraftClient.getInstance().player) {
+            return movementInputToVelocity(movementInput, speed, yaw);
         }
 
-        return movementInputToVelocity(movementInput, speed, yaw);
+        final PlayerVelocityStrafe event = new PlayerVelocityStrafe(movementInput, speed, yaw, movementInputToVelocity(movementInput, speed, yaw));
+        EventManager.INSTANCE.callEvent(event);
+        return event.getVelocity();
     }
 
     @Redirect(method = "adjustMovementForCollisions(Lnet/minecraft/util/math/Vec3d;)Lnet/minecraft/util/math/Vec3d;", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/Entity;stepHeight:F"))
