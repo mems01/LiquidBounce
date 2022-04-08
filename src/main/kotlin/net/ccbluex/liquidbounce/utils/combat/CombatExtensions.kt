@@ -94,9 +94,9 @@ class EnemyConfigurable : Configurable("Enemies") {
 
                     return players
                 } else if (suspect is PassiveEntity) {
-                    return false
+                    return animals
                 } else if (suspect is MobEntity) {
-                    return false
+                    return mobs
                 }
             }
         }
