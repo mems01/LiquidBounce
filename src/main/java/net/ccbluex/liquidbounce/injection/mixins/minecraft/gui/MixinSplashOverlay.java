@@ -41,7 +41,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(SplashOverlay.class)
 public class MixinSplashOverlay {
 
-    @Shadow @Final private MinecraftClient client;
+   /* @Shadow @Final private MinecraftClient client;
     @Shadow @Final private ResourceReload reload;
 
     private View view = null;
@@ -77,6 +77,6 @@ public class MixinSplashOverlay {
             UltralightEngine.INSTANCE.render(RenderLayer.SPLASH_LAYER, matrices);
             callbackInfo.cancel();
         }
-    }
+    }*/
 
 }

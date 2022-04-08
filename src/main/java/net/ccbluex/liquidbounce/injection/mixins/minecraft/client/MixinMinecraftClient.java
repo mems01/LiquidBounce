@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.features.module.modules.render.ModuleXRay;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.resource.language.I18n;
@@ -94,13 +95,7 @@ public abstract class MixinMinecraftClient {
         EventManager.INSTANCE.callEvent(new ClientShutdownEvent());
     }
 
-    /**
-     * Modify window title to our client title.
-     * Example: LiquidBounce v1.0.0 | 1.16.3
-     *
-     * @param callback our window title
-     */
-    @Inject(method = "getWindowTitle", at = @At("HEAD"), cancellable = true)
+    /*@Inject(method = "getWindowTitle", at = @At("HEAD"), cancellable = true)
     private void getClientTitle(CallbackInfoReturnable<String> callback) {
         LiquidBounce.INSTANCE.getLogger().debug("Modifying window title");
 
@@ -126,7 +121,7 @@ public abstract class MixinMinecraftClient {
         }
 
         callback.setReturnValue(titleBuilder.toString());
-    }
+    }*/
 
     /**
      * Set window icon to our client icon.
@@ -148,7 +143,7 @@ public abstract class MixinMinecraftClient {
         }
 
         // Load client icons
-        instance.setIcon(stream16, stream32);
+        instance.setIcon(icon16, icon32);
     }
 
     /**
@@ -159,6 +154,10 @@ public abstract class MixinMinecraftClient {
      */
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     private void hookScreen(Screen screen, CallbackInfo callbackInfo) {
+        if (screen instanceof TitleScreen) {
+            return;
+        }
+
         final ScreenEvent event = new ScreenEvent(screen);
         EventManager.INSTANCE.callEvent(event);
         if (event.isCancelled())
