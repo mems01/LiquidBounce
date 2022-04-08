@@ -178,14 +178,14 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             val raycastedEntity = raytraceEntity(range.toDouble(), rotation, filter = {
                 when (raycast) {
                     TRACE_NONE -> false
-                    TRACE_ONLYENEMY -> it.shouldBeAttacked(enemyConf = comb)
+                    TRACE_ONLYENEMY -> it.shouldBeAttacked(comb)
                     TRACE_ALL -> true
                 }
             }) ?: target
 
             // Swap enemy if there is a better enemy
             // todo: compare current target to locked target
-            if (raycastedEntity.shouldBeAttacked(enemyConf = comb) && raycastedEntity != target) {
+            if (raycastedEntity.shouldBeAttacked(comb) && raycastedEntity != target) {
                 targetTracker.lock(raycastedEntity)
             }
 
@@ -266,7 +266,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             rangeSquared.toDouble()
         }
 
-        for (target in targetTracker.enemies()) {
+        for (target in targetTracker.enemies(comb)) {
             if (target.squaredBoxedDistanceTo(player) > scanRange) {
                 continue
             }

@@ -37,18 +37,16 @@ class TargetTracker(defaultPriority: PriorityEnum = PriorityEnum.HEALTH) : Confi
     var maxDistanceSquared: Double = 0.0
 
     val priority by enumChoice("Priority", defaultPriority, PriorityEnum.values())
-    val lockOnTarget by boolean("LockOnTarget", false)
-    val sortOut by boolean("SortOut", true)
-    val delayableSwitch by intRange("DelayableSwitch", 10..20, 0..40)
 
     /**
      * Update should be called to always pick the best target out of the current world context
      */
     fun enemies(enemyConf: EnemyConfigurable = globalEnemyConfigurable): Iterable<Entity> {
-        val player = mc.player!!
+        val player = mc.player ?: return emptyList()
+        val world = mc.world ?: return emptyList()
 
-        val entities = mc.world!!.entities.filter { it.shouldBeAttacked(enemyConf) }
-            .sortedBy { player.squaredBoxedDistanceTo(it) } // Sort by distance
+        val entities = world.entities.filter { it.shouldBeAttacked(enemyConf) }
+            .sortedBy { it.squaredBoxedDistanceTo(player) } // Sort by distance
 
         entities.lastOrNull()?.let { maxDistanceSquared = it.squaredBoxedDistanceTo(player) }
 

@@ -88,11 +88,15 @@ class EnemyConfigurable : Configurable("Enemies") {
                         return false
                     }
 
+                    if ((0..3).all { suspect.inventory.getArmorStack(it).isEmpty }) {
+                        return false
+                    }
+
                     return players
                 } else if (suspect is PassiveEntity) {
-                    return animals
+                    return false
                 } else if (suspect is MobEntity) {
-                    return mobs
+                    return false
                 }
             }
         }
