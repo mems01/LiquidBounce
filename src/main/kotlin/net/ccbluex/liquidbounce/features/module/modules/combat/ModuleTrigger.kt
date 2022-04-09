@@ -46,7 +46,7 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
             val clicks =
                 cpsTimer.clicks(condition = { !cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f }, cps)
 
-            repeat(clicks) {
+            if (clicks > 0) {
                 interaction.attackEntity(player, crosshair.entity)
                 player.swingHand(Hand.MAIN_HAND)
             }
