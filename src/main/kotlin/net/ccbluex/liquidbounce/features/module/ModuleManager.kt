@@ -59,7 +59,6 @@ object ModuleManager : Listenable, Iterable<Module> by modules {
      */
     fun registerInbuilt() {
         val builtin = arrayOf(
-            ModuleHud,
             ModuleClickGui,
             ModuleFly,
             ModuleVelocity,

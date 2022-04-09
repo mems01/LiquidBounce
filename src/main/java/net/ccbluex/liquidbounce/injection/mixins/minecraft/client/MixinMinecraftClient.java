@@ -22,14 +22,13 @@ import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.common.RenderingFlags;
 import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleXRay;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Overlay;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.TitleScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.Window;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.integrated.IntegratedServer;
 import org.spongepowered.asm.mixin.Mixin;
@@ -63,6 +62,18 @@ public abstract class MixinMinecraftClient {
 
     @Shadow
     private int itemUseCooldown;
+
+    @Shadow
+    @org.jetbrains.annotations.Nullable
+    public ClientWorld world;
+
+    @Shadow
+    @org.jetbrains.annotations.Nullable
+    public Screen currentScreen;
+
+    @Shadow
+    @org.jetbrains.annotations.Nullable
+    private Overlay overlay;
 
     @Inject(method = "isAmbientOcclusionEnabled()Z", at = @At("HEAD"), cancellable = true)
     private static void injectXRayFullBright(CallbackInfoReturnable<Boolean> callback) {
@@ -154,14 +165,13 @@ public abstract class MixinMinecraftClient {
      */
     @Inject(method = "setScreen", at = @At("HEAD"), cancellable = true)
     private void hookScreen(Screen screen, CallbackInfo callbackInfo) {
-        if (screen instanceof TitleScreen) {
+        if (this.world == null || this.currentScreen != null && this.overlay != null) {
             return;
         }
 
         final ScreenEvent event = new ScreenEvent(screen);
         EventManager.INSTANCE.callEvent(event);
-        if (event.isCancelled())
-            callbackInfo.cancel();
+        if (event.isCancelled()) callbackInfo.cancel();
     }
 
     /**
