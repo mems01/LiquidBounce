@@ -271,9 +271,9 @@ object RotationManager : Listenable {
         }
 
         // Update patterns
-        /*for (pattern in AIMING_PATTERNS) {
+        for (pattern in AIMING_PATTERNS) {
             pattern.update()
-        }*/
+        }
 
         // Update rotations
         val speed = this.activeConfigurable?.turnSpeed ?: return
