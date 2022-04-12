@@ -60,9 +60,7 @@ object RotationManager : Listenable {
     // useful for something like autopot
     var deactivateManipulation = false
 
-    fun raytraceBlock(
-        eyes: Vec3d, pos: BlockPos, state: BlockState, range: Double, wallsRange: Double
-    ): VecRotation? {
+    fun raytraceBlock(eyes: Vec3d, pos: BlockPos, state: BlockState, range: Double, wallsRange: Double): VecRotation? {
         val offset = Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
         val shape = state.getOutlineShape(mc.world, pos, ShapeContext.of(mc.player))
 
@@ -150,9 +148,7 @@ object RotationManager : Listenable {
     /**
      * Find the best spot of the upper side of the block
      */
-    fun canSeeBlockTop(
-        eyes: Vec3d, pos: BlockPos, range: Double, wallsRange: Double
-    ): Boolean {
+    fun canSeeBlockTop(eyes: Vec3d, pos: BlockPos, range: Double, wallsRange: Double): Boolean {
         val rangeSquared = range * range
         val wallsRangeSquared = wallsRange * wallsRange
 

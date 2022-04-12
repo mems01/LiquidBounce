@@ -107,9 +107,7 @@ class EnemyConfigurable : Configurable("Enemies") {
 @JvmOverloads
 fun Entity.shouldBeShown(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(this)
 
-fun Entity.shouldBeAttacked(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(
-    this, true
-)
+fun Entity.shouldBeAttacked(enemyConf: EnemyConfigurable = globalEnemyConfigurable) = enemyConf.isTargeted(this, true)
 
 /**
  * Find the best emeny in current world in a specific range.
