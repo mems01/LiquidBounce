@@ -51,12 +51,12 @@ public class MixinClientPlayNetworkHandler {
 
     @Inject(method = "onChunkData", at = @At("RETURN"))
     private void injectChunkLoadEvent(ChunkDataS2CPacket packet, CallbackInfo ci) {
-        EventManager.INSTANCE.callEvent(new ChunkLoadEvent(packet.getX(), packet.getZ()));
+        //EventManager.INSTANCE.callEvent(new ChunkLoadEvent(packet.getX(), packet.getZ()));
     }
 
     @Inject(method = "onUnloadChunk", at = @At("RETURN"))
     private void injectUnloadEvent(UnloadChunkS2CPacket packet, CallbackInfo ci) {
-        EventManager.INSTANCE.callEvent(new ChunkUnloadEvent(packet.getX(), packet.getZ()));
+       // EventManager.INSTANCE.callEvent(new ChunkUnloadEvent(packet.getX(), packet.getZ()));
     }
 
     @Inject(method = "onPlayerPositionLook", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;updatePositionAndAngles(DDDFF)V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)

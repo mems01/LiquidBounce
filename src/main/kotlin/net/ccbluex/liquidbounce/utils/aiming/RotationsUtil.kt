@@ -40,6 +40,7 @@ import kotlin.math.sqrt
 class RotationsConfigurable : Configurable("Rotations") {
     val turnSpeed by floatRange("TurnSpeed", 180f..180f, 1f..180f)
     val fixVelocity by boolean("FixVelocity", true)
+    val strict by boolean("Strict", false)
 }
 
 /**
