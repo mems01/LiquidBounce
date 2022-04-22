@@ -330,7 +330,7 @@ object RotationManager : Listenable {
     /**
      * Calculate difference between two angle points
      */
-    private fun angleDifference(a: Float, b: Float) = ((a - b) % 360f + 540f) % 360f - 180f
+    fun angleDifference(a: Float, b: Float) = ((a - b) % 360f + 540f) % 360f - 180f
 
     /**
      * Modify server-side rotations
