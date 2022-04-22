@@ -34,7 +34,7 @@ fun raytraceEntity(range: Double, rotation: Rotation, filter: (Entity) -> Boolea
     val entity = mc.cameraEntity ?: return null
 
     val cameraVec = entity.getCameraPosVec(1f)
-    val rotationVec = rotation.rotationVec
+    val rotationVec = rotation.fixedSensitivity()?.rotationVec ?: return null
 
     val vec3d3 = cameraVec.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
     val box = entity.boundingBox.stretch(rotationVec.multiply(range)).expand(1.0, 1.0, 1.0)

@@ -26,6 +26,7 @@ import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.directionYaw
 import net.ccbluex.liquidbounce.utils.entity.sqrtSpeed
 import net.ccbluex.liquidbounce.utils.entity.strafe
@@ -42,9 +43,7 @@ object ModuleVelocity : Module("Velocity", Category.COMBAT) {
 
     val modes = choices("Mode", Modify) {
         arrayOf(
-            Modify,
-            Push,
-            Strafe
+            Modify, Push, Strafe
         )
     }
 
@@ -129,6 +128,10 @@ object ModuleVelocity : Module("Velocity", Category.COMBAT) {
         val untilGround by boolean("UntilGround", false)
 
         var applyStrafe = false
+
+        override fun enable() {
+            chat(applyStrafe.toString())
+        }
 
         val packetHandler = sequenceHandler<PacketEvent> { event ->
             val packet = event.packet

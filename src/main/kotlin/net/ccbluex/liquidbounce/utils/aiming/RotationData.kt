@@ -19,7 +19,10 @@
 
 package net.ccbluex.liquidbounce.utils.aiming
 
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.item.ArmorComparator
+import net.ccbluex.liquidbounce.utils.math.round
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 
@@ -40,7 +43,10 @@ data class Rotation(var yaw: Float, var pitch: Float) {
     fun fixedSensitivity(): Rotation? {
         val sensitivity = mc.options.mouseSensitivity.toFloat()
         val f = sensitivity * 0.6F + 0.2F
-        val gcd = f * f * f * 1.2F
+        var gcd = f * f * f * 1.2F
+        //chat("${gcd}, $gcd")
+        gcd = round(gcd.toDouble(), 2).toFloat()
+        //chat(gcd.toString())
 
         // get previous rotation
         val rotation = RotationManager.serverRotation ?: return null
