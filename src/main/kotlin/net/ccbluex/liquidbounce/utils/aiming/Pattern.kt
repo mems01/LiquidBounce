@@ -99,9 +99,9 @@ object GaussianPattern : Pattern {
     }
 
     override fun spot(box: Box) = Vec3d(
-        box.minX + (box.maxX - box.minX) * spot.x,
-        box.minY + (box.maxY - box.minY) * spot.y,
-        box.minZ + (box.maxZ - box.minZ) * spot.z
+        box.minX + ((box.maxX - box.minX) * spot.x),
+        box.minY + ((box.maxY - box.minY) * spot.y),
+        box.minZ + ((box.maxZ - box.minZ) * spot.z)
     )
 
 }
