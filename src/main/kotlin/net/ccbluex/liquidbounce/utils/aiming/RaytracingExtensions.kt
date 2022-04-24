@@ -34,16 +34,16 @@ fun raytraceEntity(range: Double, rotation: Rotation, filter: (Entity) -> Boolea
     val entity = mc.cameraEntity ?: return null
 
     val cameraVec = entity.getCameraPosVec(1f)
-    val rotationVec = rotation.fixedSensitivity()?.rotationVec ?: return null
+    val rotationVec = rotation.rotationVec
 
     val vec3d3 = cameraVec.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
     val box = entity.boundingBox.stretch(rotationVec.multiply(range)).expand(1.0, 1.0, 1.0)
 
     val entityHitResult = ProjectileUtil.raycast(
         entity, cameraVec, vec3d3, box, { !it.isSpectator && it.collides() && filter(it) }, range * range
-    )
+    ) ?: return null
 
-    return entityHitResult?.entity
+    return entityHitResult.entity
 }
 
 fun raytraceBlock(range: Double, rotation: Rotation, pos: BlockPos, state: BlockState): BlockHitResult? {
