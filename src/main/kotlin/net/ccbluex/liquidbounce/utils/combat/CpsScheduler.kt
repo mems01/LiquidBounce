@@ -35,10 +35,11 @@ class CpsScheduler {
 
     fun clicks(condition: () -> Boolean, cps: IntRange): Int {
         val currTime = System.currentTimeMillis()
-
         var timeLeft = currTime - lastClick
+
         if (timeLeft > 1000) {
             lastClick = System.currentTimeMillis()
+            clickTime = clickTime(cps)
             return 0
         }
         if (clickTime < 0) {
@@ -55,7 +56,7 @@ class CpsScheduler {
             lastClick = System.currentTimeMillis()
         }
 
-        return clicks
+        return clicks.coerceAtMost(2)
     }
 
     // TODO: Make more stamina like

@@ -30,6 +30,7 @@ import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.facingEnemy
 import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
 import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
@@ -195,8 +196,10 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
                     player
                 ))
             }, cps)
-
-            if (clicks > 0) {
+            if (clicks > 2) {
+                chat("$clicks hit!")
+            }
+            repeat(clicks) {
                 if (simulateInventoryClosing && isInInventoryScreen) {
                     network.sendPacket(CloseHandledScreenC2SPacket(0))
                 }

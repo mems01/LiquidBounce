@@ -105,7 +105,7 @@ object ModuleProjectilePuncher : Module("ProjectilePuncher", Category.WORLD) {
         )
 
         // There is no need for multiple clicks on one target.
-        if (clicks > 0) {
+        repeat(clicks) {
             // Yeet away the projectile
             attackEntity(entity)
             targetTracker.cleanup()
