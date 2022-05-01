@@ -23,6 +23,7 @@ import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.block.getState
 import net.ccbluex.liquidbounce.utils.client.StateUpdateEvent
+import net.minecraft.block.Blocks
 import net.minecraft.block.SideShapeType
 import net.minecraft.util.math.Direction
 
@@ -35,9 +36,8 @@ object ModuleEagle : Module("Eagle", Category.PLAYER) {
 
     val repeatable = handler<StateUpdateEvent> {
         // Check if player is on the edge and is NOT flying
-        val pos = player.blockPos.down()
-        val isAir = !pos.getState()!!
-            .isSideSolid(mc.world!!, pos, Direction.UP, SideShapeType.CENTER) && !player.abilities.flying
+        val pos = player.blockPos.down().getState() ?: return@handler
+        val isAir = pos.block == Blocks.AIR && !player.abilities.flying
 
         if (isAir) {
             it.state.enforceEagle = true
