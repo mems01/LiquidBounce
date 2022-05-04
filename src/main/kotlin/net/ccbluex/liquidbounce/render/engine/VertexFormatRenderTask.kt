@@ -75,7 +75,6 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
                         AttributeType.Position -> GL11.glVertexPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
                         AttributeType.Color -> GL11.glColorPointer(it.count, it.type.openGlEnum, this.vertexFormat.length, it.offset.toLong())
                         AttributeType.Texture -> GL11.glTexCoordPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        else -> throw IllegalStateException()
                     }
                 }
             }

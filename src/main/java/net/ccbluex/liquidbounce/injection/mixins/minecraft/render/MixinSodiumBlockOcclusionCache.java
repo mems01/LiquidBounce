@@ -1,4 +1,4 @@
-package net.ccbluex.liquidbounce.injection.mixins.minecraft.render;
+/*package net.ccbluex.liquidbounce.injection.mixins.minecraft.render;
 
 import me.jellysquid.mods.sodium.client.render.occlusion.BlockOcclusionCache;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleXRay;
@@ -29,3 +29,4 @@ public class MixinSodiumBlockOcclusionCache {
         cir.cancel();
     }
 }
+ */
