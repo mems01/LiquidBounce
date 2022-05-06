@@ -60,8 +60,8 @@ object GaussianPattern : Pattern {
     private const val STANDING_CHANCE: Double = 0.91
     private const val MOVING_CHANCE: Double = 0.32
 
-    private const val SPEED_HORIZONTAL_LIMITER: Double = 0.04
-    private const val SPEED_VERTICAL_LIMITER: Double = 0.0787
+    private const val SPEED_HORIZONTAL_LIMITER: Double = 0.5
+    private const val SPEED_VERTICAL_LIMITER: Double = 0.1374
 
     private val randomGaussian: Double
         get() = abs(random.nextGaussian() % 1.0)

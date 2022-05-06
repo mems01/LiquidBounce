@@ -19,6 +19,8 @@
 
 package net.ccbluex.liquidbounce.utils.aiming
 
+import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoJumpDelay
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
@@ -38,22 +40,26 @@ data class Rotation(var yaw: Float, var pitch: Float) {
      * Fix rotation based on sensitivity
      */
     fun fixedSensitivity(): Rotation? {
-        val sensitivity = mc.options.mouseSensitivity.toFloat()
-        val f = sensitivity * 0.6F + 0.2F
-        val gcd = f * f * f * 1.2F
+        // gcd might need a fix
+        val sensitivity = mc.options.mouseSensitivity
+        val f = sensitivity * 0.6000000238418579 + 0.20000000298023224
+        val gcd = f * f * f * 1.2
+        if (ModuleNoJumpDelay.enabled) {
+            chat(gcd.toString())
+        }
 
         // get previous rotation
         val rotation = RotationManager.serverRotation ?: return null
 
         // fix yaw
-        var deltaYaw = yaw - rotation.yaw
+        var deltaYaw = (yaw - rotation.yaw).toDouble()
         deltaYaw -= deltaYaw % gcd
-        val yaw = rotation.yaw + deltaYaw
+        val yaw = (rotation.yaw + deltaYaw).toFloat()
 
         // fix pitch
-        var deltaPitch = pitch - rotation.pitch
+        var deltaPitch = (pitch - rotation.pitch).toDouble()
         deltaPitch -= deltaPitch % gcd
-        val pitch = rotation.pitch + deltaPitch
+        val pitch = (rotation.pitch + deltaPitch).toFloat()
         return Rotation(yaw, pitch)
     }
 
