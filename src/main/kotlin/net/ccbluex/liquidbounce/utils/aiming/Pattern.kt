@@ -19,9 +19,11 @@
 
 package net.ccbluex.liquidbounce.utils.aiming
 
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.moving
 import net.minecraft.util.math.Box
+import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
 import java.util.*
 import kotlin.math.abs
@@ -58,7 +60,7 @@ object GaussianPattern : Pattern {
     private var nextSpot = gaussianVec
 
     private const val STANDING_CHANCE: Double = 0.91
-    private const val MOVING_CHANCE: Double = 0.32
+    private const val MOVING_CHANCE: Double = 0.1
 
     private const val SPEED_HORIZONTAL_LIMITER: Double = 0.5
     private const val SPEED_VERTICAL_LIMITER: Double = 0.1374
@@ -98,10 +100,13 @@ object GaussianPattern : Pattern {
         }
     }
 
-    override fun spot(box: Box) = Vec3d(
-        box.minX + ((box.maxX - box.minX) * spot.x),
-        box.minY + ((box.maxY - box.minY) * spot.y),
-        box.minZ + ((box.maxZ - box.minZ) * spot.z)
-    )
+    override fun spot(box: Box): Vec3d {
+        //chat(MathHelper.subtractAngles((box.minX + ((box.maxX - box.minX) * spot.x)).toFloat(), (box.minX + (box.maxX - box.minX) * spot.x).toFloat()).toString())
+        return Vec3d(
+            box.minX + ((box.maxX - box.minX) * spot.x),
+            box.minY + ((box.maxY - box.minY) * spot.y),
+            box.minZ + ((box.maxZ - box.minZ) * spot.z)
+        )
+    }
 
 }
