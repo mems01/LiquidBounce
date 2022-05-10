@@ -41,6 +41,10 @@ class RotationsConfigurable : Configurable("Rotations") {
     val turnSpeed by floatRange("TurnSpeed", 180f..180f, 1f..180f)
     val fixVelocity by boolean("FixVelocity", true)
     val strict by boolean("Strict", false)
+    val horizontalPatternSpeed by float("HorizontalPatternSpeed", 0.1372f, 0.1f..0.5f)
+    val verticalPatternSpeed by float("VerticalPatternSpeed", 0.1753f, 0.1f..0.5f)
+    val movingChance by float("MovingChance", 0.31f, 0f..1f)
+    val standingChance by float("StandingChance", 0.91f, 0f..1f)
 }
 
 /**

@@ -57,11 +57,13 @@ object GaussianPattern : Pattern {
     private var spot = gaussianVec
     private var nextSpot = gaussianVec
 
-    private const val STANDING_CHANCE: Double = 0.91
-    private const val MOVING_CHANCE: Double = 0.31
+    private val STANDING_CHANCE: Double = RotationManager.activeConfigurable?.standingChance?.toDouble() ?: 0.0
+    private val MOVING_CHANCE: Double = RotationManager.activeConfigurable?.movingChance?.toDouble() ?: 0.0
 
-    private const val SPEED_HORIZONTAL_LIMITER: Double = 0.3718 // 0.5
-    private const val SPEED_VERTICAL_LIMITER: Double = 0.0648 // 0.1374
+    private val SPEED_HORIZONTAL_LIMITER: Double =
+        RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0// 0.5
+    private val SPEED_VERTICAL_LIMITER: Double =
+        RotationManager.activeConfigurable?.verticalPatternSpeed?.toDouble() ?: 0.0 // 0.1374
 
     private val randomGaussian: Double
         get() = abs(random.nextGaussian() % 1.0)
@@ -72,9 +74,9 @@ object GaussianPattern : Pattern {
     override fun update() {
         // Chance of generating new spot
         val newSpotChance = if (mc.player?.moving == false) {
-            STANDING_CHANCE
+            RotationManager.activeConfigurable?.standingChance?.toDouble() ?: 0.0
         } else {
-            MOVING_CHANCE
+            RotationManager.activeConfigurable?.movingChance?.toDouble() ?: 0.0
         }
 
         if (random.nextDouble() > newSpotChance) {
@@ -83,9 +85,9 @@ object GaussianPattern : Pattern {
 
         // Check if spot has to be moved
         if (spot != nextSpot) {
-            val xSpeed = randomGaussian * SPEED_HORIZONTAL_LIMITER
-            val ySpeed = randomGaussian * SPEED_VERTICAL_LIMITER
-            val zSpeed = randomGaussian * SPEED_HORIZONTAL_LIMITER
+            val xSpeed = randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
+            val ySpeed = randomGaussian * (RotationManager.activeConfigurable?.verticalPatternSpeed?.toDouble() ?: 0.0)
+            val zSpeed = randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
 
             val diffX = (nextSpot.x - spot.x)
             spot.x += diffX.coerceIn(-xSpeed, xSpeed)
