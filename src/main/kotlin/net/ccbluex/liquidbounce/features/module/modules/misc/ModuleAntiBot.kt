@@ -114,7 +114,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
         }
 
         private fun isFullyArmored(entity: PlayerEntity): Boolean {
-            return (0..3).all {
+            return (0..3).any {
                 entity.inventory.getArmorStack(it).item is ArmorItem && !entity.inventory.getArmorStack(
                     it
                 ).hasEnchantments()

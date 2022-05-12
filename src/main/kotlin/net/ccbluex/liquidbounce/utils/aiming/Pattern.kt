@@ -57,19 +57,11 @@ object GaussianPattern : Pattern {
     private var spot = gaussianVec
     private var nextSpot = gaussianVec
 
-    private val STANDING_CHANCE: Double = RotationManager.activeConfigurable?.standingChance?.toDouble() ?: 0.0
-    private val MOVING_CHANCE: Double = RotationManager.activeConfigurable?.movingChance?.toDouble() ?: 0.0
-
-    private val SPEED_HORIZONTAL_LIMITER: Double =
-        RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0// 0.5
-    private val SPEED_VERTICAL_LIMITER: Double =
-        RotationManager.activeConfigurable?.verticalPatternSpeed?.toDouble() ?: 0.0 // 0.1374
-
     private val randomGaussian: Double
         get() = abs(random.nextGaussian() % 1.0)
 
     private val gaussianVec: Vec3d
-        get() = Vec3d(randomGaussian, 1 - randomGaussian, randomGaussian)
+        get() = Vec3d(1 - randomGaussian, 1 - randomGaussian, 1 - randomGaussian)
 
     override fun update() {
         // Chance of generating new spot
@@ -102,9 +94,9 @@ object GaussianPattern : Pattern {
 
     override fun spot(box: Box): Vec3d {
         return Vec3d(
-            box.minX + ((box.maxX - box.minX) * spot.x),
-            box.minY + ((box.maxY - box.minY) * spot.y),
-            box.minZ + ((box.maxZ - box.minZ) * spot.z)
+            box.minX + (box.maxX - box.minX) * spot.x,
+            box.minY + (box.maxY - box.minY) * spot.y,
+            box.minZ + (box.maxZ - box.minZ) * spot.z
         )
     }
 
