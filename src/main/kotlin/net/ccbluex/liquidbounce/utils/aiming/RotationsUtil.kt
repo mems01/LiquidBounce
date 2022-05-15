@@ -309,7 +309,7 @@ object RotationManager : Listenable {
      * Calculate difference between the server rotation and your rotation
      */
     fun rotationDifference(rotation: Rotation): Double {
-        return rotationDifference(rotation, serverRotation ?: Rotation(0f, 0f))
+        return rotationDifference(rotation, serverRotation ?: return 0.0)
     }
 
     /**
