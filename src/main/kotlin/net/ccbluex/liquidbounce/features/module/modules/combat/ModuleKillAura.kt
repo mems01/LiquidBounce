@@ -83,7 +83,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     private val targetTracker = tree(TargetTracker())
 
     // Targets
-    private val comb = tree(EnemyConfigurable())
+    val comb = tree(EnemyConfigurable())
 
     // Rotation
     private val rotations = tree(RotationsConfigurable())
