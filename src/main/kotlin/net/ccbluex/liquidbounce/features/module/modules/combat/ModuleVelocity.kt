@@ -26,7 +26,6 @@ import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
-import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.directionYaw
 import net.ccbluex.liquidbounce.utils.entity.sqrtSpeed
 import net.ccbluex.liquidbounce.utils.entity.strafe
@@ -129,10 +128,6 @@ object ModuleVelocity : Module("Velocity", Category.COMBAT) {
 
         var applyStrafe = false
 
-        override fun enable() {
-            chat(applyStrafe.toString())
-        }
-
         val packetHandler = sequenceHandler<PacketEvent> { event ->
             val packet = event.packet
 
@@ -157,7 +152,6 @@ object ModuleVelocity : Module("Velocity", Category.COMBAT) {
                 event.movement.strafe(player.directionYaw, player.sqrtSpeed * strength)
             }
         }
-
     }
 
 }
