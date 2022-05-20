@@ -20,6 +20,7 @@ package net.ccbluex.liquidbounce.utils.entity
 
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoJumpDelay
 import net.ccbluex.liquidbounce.render.engine.Vec3
+import net.ccbluex.liquidbounce.utils.aiming.Rotation
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.minecraft.client.network.ClientPlayerEntity
@@ -108,6 +109,9 @@ fun Vec3d.strafe(yaw: Float, speed: Double = sqrtSpeed) {
 
 val ClientPlayerEntity.eyesPos: Vec3d
     get() = Vec3d(pos.x, boundingBox.minY + getEyeHeight(pose), pos.z)
+
+val ClientPlayerEntity.rotation: Rotation
+    get() = Rotation(yaw, pitch)
 
 /**
  * Allows to calculate the distance between the current entity and [entity] from the nearest corner of the bounding box

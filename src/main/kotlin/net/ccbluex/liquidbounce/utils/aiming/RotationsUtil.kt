@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.PlayerVelocityStrafe
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.entity.rotation
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
@@ -280,7 +281,7 @@ object RotationManager : Listenable {
         val speed = this.activeConfigurable?.turnSpeed ?: return
         val turnSpeed = speed.start + (speed.endInclusive - speed.start) * Math.random().toFloat()
 
-        val playerRotation = Rotation(mc.player!!.yaw, mc.player!!.pitch)
+        val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
             if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= turnSpeed) {
