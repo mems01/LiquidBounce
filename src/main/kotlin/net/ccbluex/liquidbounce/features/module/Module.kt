@@ -80,7 +80,7 @@ open class Module(
                 notification(
                     if (new) TranslatableText("liquidbounce.generic.enabled") else TranslatableText("liquidbounce.generic.disabled"),
                     this.name,
-                    NotificationEvent.Severity.INFO
+                    NotificationEvent.Severity.SUCCESS
                 )
 
                 // Call out module event
