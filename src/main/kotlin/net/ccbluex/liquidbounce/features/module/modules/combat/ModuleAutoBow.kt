@@ -19,6 +19,7 @@
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
 import net.ccbluex.liquidbounce.config.ToggleableConfigurable
+import net.ccbluex.liquidbounce.event.GameRenderEvent
 import net.ccbluex.liquidbounce.event.GameTickEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.module.Category
@@ -58,7 +59,7 @@ object ModuleAutoBow : Module("AutoBow", Category.COMBAT) {
 
         val charged by int("Charged", 20, 3..20)
 
-        val tickRepeatable = handler<GameTickEvent> {
+            val tickRepeatable = handler<GameRenderEvent> {
             val player = mc.player ?: return@handler
 
             val currentItem = player.activeItem
@@ -100,7 +101,7 @@ object ModuleAutoBow : Module("AutoBow", Category.COMBAT) {
             tree(rotationConfigurable)
         }
 
-        val tickRepeatable = handler<GameTickEvent> {
+        val tickRepeatable = handler<GameRenderEvent> {
             val player = mc.player ?: return@handler
 
             targetTracker.lockedOnTarget = null
