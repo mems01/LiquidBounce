@@ -87,18 +87,8 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         }
 
         if (!Pulse.enabled && dummy) {
-            val clone = OtherClientPlayerEntity(world, player.gameProfile)
-
-            clone.headYaw = player.headYaw
-            clone.copyPositionAndRotation(player)
-            /**
-             * A different UUID has to be set, to avoid [fakePlayer] from being invisible to [player]
-             * @see net.minecraft.world.entity.EntityIndex.add
-             */
-            clone.uuid = UUID.randomUUID()
-            world.addEntity(clone.id, clone)
-
-            fakePlayer = clone
+            fakePlayer = createClone() ?: return
+            world.addEntity(fakePlayer!!.id, fakePlayer)
         }
 
         startPos = player.pos
@@ -221,5 +211,21 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         player.velocity.times(0.0)
 
         player.updatePositionAndAngles(start.x, start.y, start.z, player.yaw, player.pitch)
+    }
+
+    fun createClone(): OtherClientPlayerEntity? {
+        val player = mc.player ?: return null
+        val world = mc.world ?: return null
+
+        val clone = OtherClientPlayerEntity(world, player.gameProfile)
+
+        clone.headYaw = player.headYaw
+        clone.copyPositionAndRotation(player)
+        /**
+         * A different UUID has to be set, to avoid [fakePlayer] from being invisible to [player]
+         * @see net.minecraft.world.entity.EntityIndex.add
+         */
+        clone.uuid = UUID.randomUUID()
+        return clone
     }
 }
