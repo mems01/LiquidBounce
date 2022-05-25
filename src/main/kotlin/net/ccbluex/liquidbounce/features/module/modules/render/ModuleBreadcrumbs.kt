@@ -29,6 +29,7 @@ import net.ccbluex.liquidbounce.render.engine.memory.putVertex
 import net.ccbluex.liquidbounce.render.shaders.SmoothLineShader
 import net.ccbluex.liquidbounce.render.utils.rainbow
 import net.ccbluex.liquidbounce.utils.entity.interpolateCurrentPosition
+import net.minecraft.util.math.Vec3d
 
 /**
  * Breadcrumbs module
@@ -42,9 +43,7 @@ object ModuleBreadcrumbs : Module("Breadcrumbs", Category.RENDER) {
     private val colorRainbow by boolean("Rainbow", false)
 
     private val positions = mutableListOf<Double>()
-    private var lastPosX = 0.0
-    private var lastPosY = 0.0
-    private var lastPosZ = 0.0
+    private var lastPos = Vec3d.ZERO
 
     override fun enable() {
         synchronized(positions) {
@@ -64,11 +63,8 @@ object ModuleBreadcrumbs : Module("Breadcrumbs", Category.RENDER) {
 
         synchronized(positions) {
             RenderEngine.enqueueForRendering(
-                RenderEngine.CAMERA_VIEW_LAYER_WITHOUT_BOBBING,
-                createBreadcrumbsRenderTask(
-                    color,
-                    positions,
-                    it.tickDelta
+                RenderEngine.CAMERA_VIEW_LAYER_WITHOUT_BOBBING, createBreadcrumbsRenderTask(
+                    color, positions, it.tickDelta
                 )
             )
         }
@@ -102,13 +98,11 @@ object ModuleBreadcrumbs : Module("Breadcrumbs", Category.RENDER) {
     }
 
     val updateHandler = handler<PlayerTickEvent> {
-        if (player.x == lastPosX && player.y == lastPosY && player.z == lastPosZ) {
+        if (player.pos == lastPos) {
             return@handler
         }
 
-        lastPosX = player.x
-        lastPosY = player.y
-        lastPosZ = player.z
+        lastPos = player.pos
 
         synchronized(positions) {
             positions.addAll(listOf(player.x, player.y, player.z))

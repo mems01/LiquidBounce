@@ -18,8 +18,7 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.event.EngineRenderEvent
-import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
@@ -40,10 +39,10 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
 
     private val cpsTimer = CpsScheduler()
 
-    val repeatable = handler<EngineRenderEvent> {
+    val repeatable = repeatable {
         val crosshair = mc.crosshairTarget
 
-        if (crosshair is EntityHitResult && crosshair.entity.shouldBeAttacked(ModuleKillAura.comb)) {
+        if (crosshair is EntityHitResult && crosshair.entity.shouldBeAttacked()) {
             val clicks =
                 cpsTimer.clicks(condition = { !cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f }, cps)
 
