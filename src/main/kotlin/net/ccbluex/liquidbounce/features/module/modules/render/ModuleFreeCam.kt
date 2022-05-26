@@ -25,12 +25,15 @@ import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.modules.player.ModuleBlink.createClone
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.entity.strafe
+import net.ccbluex.liquidbounce.utils.math.times
 import net.minecraft.client.network.OtherClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
+import net.minecraft.util.math.Vec3d
 
 /**
  * FreeCam module
@@ -46,35 +49,29 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     private val resetMotion by boolean("ResetMotion", true)
 
     private var fakePlayer: OtherClientPlayerEntity? = null
-    private var x = 0.0
-    private var y = 0.0
-    private var z = 0.0
-    private var posX = 0.0
-    private var posY = 0.0
-    private var posZ = 0.0
+    private var velocity = Vec3d.ZERO
+    private var pos = Vec3d.ZERO
     private var ground = false
 
     override fun enable() {
         if (resetMotion) {
-            player.setVelocity(0.0, 0.0, 0.0)
+            player.velocity.times(0.0)
         }
-        x = 0.0
-        y = 0.0
-        z = 0.0
-        posX = player.x
-        posY = player.y
-        posZ = player.z
+
+        velocity = Vec3d.ZERO
+        pos = player.pos
         ground = player.isOnGround
+
+        fakePlayer = createClone() ?: return
+        world.addEntity((fakePlayer ?: return).id, fakePlayer)
+
         if (!collision) {
             player.noClip = true
         }
-
-        fakePlayer = createClone() ?: return
-        world.addEntity(fakePlayer!!.id, fakePlayer)
     }
 
     override fun disable() {
-        player.setVelocity(x, y, z)
+        player.velocity = velocity
 
         fakePlayer?.let {
             player.updatePositionAndAngles(it.x, it.y, it.z, player.yaw, player.pitch)
@@ -105,19 +102,20 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     }
 
     val packetHandler = handler<PacketEvent> { event ->
-        if (fakePlayer == null) {
-            return@handler
-        }
+        val clone = fakePlayer ?: return@handler
 
         when (val packet = event.packet) {
             // For better FreeCam detecting AntiCheats, we need to prove to them that the player's moving
             is PlayerMoveC2SPacket -> {
+                chat(packet.toString())
                 if (packet.changePosition) {
-                    packet.x = posX
-                    packet.y = posY
-                    packet.z = posZ
+                    packet.x = pos.x
+                    packet.y = pos.y
+                    packet.z = pos.z
                 }
-                packet.onGround = ground
+                if (packet.onGround != ground) {
+                    packet.onGround = ground
+                }
                 if (packet.changeLook) {
                     packet.yaw = player.yaw
                     packet.pitch = player.pitch
@@ -126,7 +124,8 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
             is PlayerActionC2SPacket -> event.cancelEvent()
             // In case of a teleport
             is PlayerPositionLookS2CPacket -> {
-                fakePlayer?.updatePosition(packet.x, packet.y, packet.z)
+                clone.updatePosition(packet.x, packet.y, packet.z)
+                pos = Vec3d(packet.x, packet.y, packet.z)
                 // Reset the motion
                 event.cancelEvent()
             }
