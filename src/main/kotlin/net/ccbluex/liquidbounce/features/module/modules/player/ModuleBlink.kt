@@ -32,7 +32,9 @@ import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.notification
 import net.ccbluex.liquidbounce.utils.client.regular
 import net.ccbluex.liquidbounce.utils.math.times
+import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.network.OtherClientPlayerEntity
+import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.Entity
 import net.minecraft.network.Packet
 import net.minecraft.network.packet.c2s.play.*
@@ -87,8 +89,7 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         }
 
         if (!Pulse.enabled && dummy) {
-            fakePlayer = createClone() ?: return
-            world.addEntity(fakePlayer!!.id, fakePlayer)
+            setupClone()
         }
 
         startPos = player.pos
@@ -213,10 +214,7 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         player.updatePositionAndAngles(start.x, start.y, start.z, player.yaw, player.pitch)
     }
 
-    fun createClone(): OtherClientPlayerEntity? {
-        val player = mc.player ?: return null
-        val world = mc.world ?: return null
-
+    fun createClone(player: ClientPlayerEntity, world: ClientWorld): OtherClientPlayerEntity {
         val clone = OtherClientPlayerEntity(world, player.gameProfile)
 
         clone.headYaw = player.headYaw
@@ -227,5 +225,13 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
          */
         clone.uuid = UUID.randomUUID()
         return clone
+    }
+
+    private fun setupClone() {
+        val player = mc.player ?: return
+        val world = mc.world ?: return
+
+        fakePlayer = createClone(player, world)
+        world.addEntity(fakePlayer?.id ?: return, fakePlayer)
     }
 }
