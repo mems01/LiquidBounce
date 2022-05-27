@@ -56,19 +56,19 @@ object ModuleESP : Module("ESP", Category.RENDER) {
 
     private val modes = choices("Mode", OutlineMode, arrayOf(OutlineMode, BoxMode))
 
-    private val colorMods = choices("ColorMode", ColorMode, arrayOf(ColorMode, RainbowMode))
+    private val colorMods = choices("ColorMode", StaticMode, arrayOf(StaticMode, RainbowMode))
 
-    private object ColorMode : Choice("Static") {
+    private object StaticMode : Choice("Static") {
 
         override val parent: ChoiceConfigurable
-            get() = modes
+            get() = colorMods
 
         val color by color("Color", Color4b.WHITE)
     }
 
     private object RainbowMode : Choice("Rainbow") {
         override val parent: ChoiceConfigurable
-            get() = modes
+            get() = colorMods
     }
 
     val teamColor by boolean("TeamColor", true)
@@ -133,7 +133,7 @@ object ModuleESP : Module("ESP", Category.RENDER) {
     }
 
     fun getBaseColor(): Color4b {
-        return if (RainbowMode.isActive) rainbow() else ColorMode.color
+        return if (RainbowMode.isActive) rainbow() else StaticMode.color
     }
 
     fun getColor(entity: Entity): Color4b? {

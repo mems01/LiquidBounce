@@ -51,30 +51,12 @@ public class MixinClientPlayNetworkHandler {
 
     @Inject(method = "onChunkData", at = @At("RETURN"))
     private void injectChunkLoadEvent(ChunkDataS2CPacket packet, CallbackInfo ci) {
-        //EventManager.INSTANCE.callEvent(new ChunkLoadEvent(packet.getX(), packet.getZ()));
+        EventManager.INSTANCE.callEvent(new ChunkLoadEvent(packet.getX(), packet.getZ()));
     }
 
     @Inject(method = "onUnloadChunk", at = @At("RETURN"))
     private void injectUnloadEvent(UnloadChunkS2CPacket packet, CallbackInfo ci) {
-       // EventManager.INSTANCE.callEvent(new ChunkUnloadEvent(packet.getX(), packet.getZ()));
-    }
-
-    @Inject(method = "onPlayerPositionLook", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;updatePositionAndAngles(DDDFF)V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)
-    private void injectNoRotateSet(PlayerPositionLookS2CPacket packet, CallbackInfo ci, PlayerEntity playerEntity, Vec3d vec3d, boolean bl, boolean bl2, boolean bl3, double d, double e, double f, double g, double h, double i, float j, float k) {
-        if (!ModuleNoRotateSet.INSTANCE.getEnabled() || MinecraftClient.getInstance().currentScreen instanceof DownloadingTerrainScreen) {
-            return;
-        }
-
-        // Accept the requested position only.
-        playerEntity.updatePosition(e, g, i);
-        this.connection.send(new TeleportConfirmC2SPacket(packet.getTeleportId()));
-        // Silently accept yaw and pitch values requested by the server.
-        this.connection.send(new PlayerMoveC2SPacket.Full(playerEntity.getX(), playerEntity.getY(), playerEntity.getZ(), j, k, false));
-        // Increase yaw and pitch by a value so small that the difference cannot be seen, just to update the rotations server-side.
-        playerEntity.setYaw(playerEntity.prevYaw + 0.000001f);
-        playerEntity.setPitch(playerEntity.prevPitch + 0.000001f);
-
-        ci.cancel();
+        EventManager.INSTANCE.callEvent(new ChunkUnloadEvent(packet.getX(), packet.getZ()));
     }
 
     @Inject(method = "onPlayerPositionLook", cancellable = true, at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/PlayerEntity;updatePositionAndAngles(DDDFF)V", shift = At.Shift.BEFORE), locals = LocalCapture.CAPTURE_FAILHARD)

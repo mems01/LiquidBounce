@@ -62,7 +62,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
         pos = player.pos
         ground = player.isOnGround
 
-        fakePlayer = createClone() ?: return
+        fakePlayer = createClone(player, world)
         world.addEntity((fakePlayer ?: return).id, fakePlayer)
 
         if (!collision) {
