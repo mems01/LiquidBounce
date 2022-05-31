@@ -30,37 +30,25 @@ package net.ccbluex.liquidbounce.utils.combat
  */
 class CpsScheduler {
 
-    var lastClick = 0L
-    var clickTime = -1L
+    private var lastClick = 0L
+    private var clickTime = -1L
 
     fun clicks(condition: () -> Boolean, cps: IntRange): Int {
-        val currTime = System.currentTimeMillis()
-        var timeLeft = currTime - lastClick
-
-        if (timeLeft > 1000) {
-            lastClick = System.currentTimeMillis()
-            clickTime = clickTime(cps)
-            return 0
-        }
-        if (clickTime < 0) {
-            clickTime = clickTime(cps)
-        }
-
+        var timeLeft = System.currentTimeMillis() - lastClick
         var clicks = 0
 
-        while (timeLeft - clickTime > 0 && condition()) {
-            timeLeft -= clickTime
+        while (timeLeft >= clickTime && condition()) {
+            timeLeft -= lastClick
             clicks++
 
             clickTime = clickTime(cps)
             lastClick = System.currentTimeMillis()
         }
 
-        return clicks.coerceAtMost(2)
+        return clicks
     }
 
     // TODO: Make more stamina like
     private fun clickTime(cps: IntRange) =
         ((Math.random() * (1000 / cps.first - 1000 / cps.last + 1)) + 1000 / cps.last).toLong()
-
 }
