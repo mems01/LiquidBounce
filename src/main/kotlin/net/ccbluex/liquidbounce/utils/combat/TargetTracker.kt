@@ -48,8 +48,6 @@ class TargetTracker(defaultPriority: PriorityEnum = PriorityEnum.HEALTH) : Confi
         val entities = world.entities.filter { it.shouldBeAttacked(enemyConf) }
             .sortedBy { it.squaredBoxedDistanceTo(player) } // Sort by distance
 
-        entities.lastOrNull()?.let { maxDistanceSquared = it.squaredBoxedDistanceTo(player) }
-
         when (priority) {
             PriorityEnum.HEALTH -> entities.sortedBy { if (it is LivingEntity) it.health else 0f } // Sort by health
             PriorityEnum.DIRECTION -> entities.sortedBy {
@@ -60,7 +58,11 @@ class TargetTracker(defaultPriority: PriorityEnum = PriorityEnum.HEALTH) : Confi
                 )
             } // Sort by FOV
             PriorityEnum.AGE -> entities.sortedBy { -it.age } // Sort by existence
+            PriorityEnum.DISTANCE -> entities.sortedBy { it.squaredBoxedDistanceTo(player) }  // Sort by distance
+            PriorityEnum.HURT_TIME -> entities.sortedBy { if (it is LivingEntity) it.hurtTime else 0 }
         }
+
+        entities.firstOrNull()?.let { maxDistanceSquared = it.squaredBoxedDistanceTo(player) }
 
         return entities.asIterable()
     }
