@@ -54,7 +54,7 @@ fun raytraceBlock(range: Double, rotation: Rotation, pos: BlockPos, state: Block
 
     val end = start.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
 
-    return mc.world!!.raycastBlock(
+    return mc.world?.raycastBlock(
         start, end, pos, state.getOutlineShape(mc.world, pos, ShapeContext.of(mc.player)), state
     )
 }
@@ -67,7 +67,7 @@ fun raycast(range: Double, rotation: Rotation): BlockHitResult? {
 
     val end = start.add(rotationVec.x * range, rotationVec.y * range, rotationVec.z * range)
 
-    return mc.world!!.raycast(
+    return mc.world?.raycast(
         RaycastContext(
             start, end, RaycastContext.ShapeType.OUTLINE, RaycastContext.FluidHandling.NONE, mc.cameraEntity!!
         )
