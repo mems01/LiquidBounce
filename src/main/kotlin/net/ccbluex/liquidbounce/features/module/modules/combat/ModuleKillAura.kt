@@ -261,9 +261,9 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         val eyes = player.eyesPos
 
         val scanRange = if (targetTracker.maxDistanceSquared > rangeSquared) {
-            ((range + scanExtraRange) * (range + scanExtraRange)).toDouble()
+            (range + scanExtraRange) * (range + scanExtraRange)
         } else {
-            rangeSquared.toDouble()
+            rangeSquared
         }
 
         for (target in targetTracker.enemies(comb)) {
@@ -285,13 +285,13 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
             // find best spot (and skip if no spot was found)
             val (rotation, _) = RotationManager.raytraceBox(
-                eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
+                eyes.add(playerPrediction), box, range = sqrt(scanRange.toDouble()), wallsRange = wallRange.toDouble()
             ) ?: continue
 
             // lock on target tracker
             targetTracker.lock(target)
 
-            // aim on target
+            // aim at target
             RotationManager.aimAt(rotation, configurable = rotations)
             break
         }
