@@ -25,13 +25,11 @@ import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.modules.combat.ModuleKillAura.RaycastMode.*
-import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoJumpDelay
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
 import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.facingEnemy
 import net.ccbluex.liquidbounce.utils.aiming.raytraceEntity
 import net.ccbluex.liquidbounce.utils.client.MC_1_8
-import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.protocolVersion
 import net.ccbluex.liquidbounce.utils.combat.CpsScheduler
 import net.ccbluex.liquidbounce.utils.combat.EnemyConfigurable
@@ -154,7 +152,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
 
             // Attack enemy according to cps and cooldown
             val clicks = cpsTimer.clicks(condition = {
-                (!cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f) && (!ModuleCriticals.shouldWaitForCrit() || raycastedEntity.velocity.lengthSquared() > 0.25 * 0.25) && (attackShielding || raycastedEntity !is PlayerEntity || player.mainHandStack.item is AxeItem || !raycastedEntity.wouldBlockHit(
+                (!cooldown || player.getAttackCooldownProgress(0.0f) >= 1.0f) && (!ModuleCriticals.shouldWaitForCrit() || raycastedEntity.velocity.lengthSquared() > 0.25 * 0.25) && (attackShielding || raycastedEntity !is PlayerEntity || player.mainHandStack.item !is AxeItem || !raycastedEntity.wouldBlockHit(
                     player
                 ))
             }, cps)
@@ -229,9 +227,9 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             rangeSquared
         }
 
-        if (ModuleNoJumpDelay.enabled) {
+        /*if (ModuleNoJumpDelay.enabled) {
             chat("${sqrt(targetTracker.maxDistanceSquared)}")
-        }
+        }*/
 
         for (target in targetTracker.enemies(comb)) {
             if (target.squaredBoxedDistanceTo(player) > scanRange) {
