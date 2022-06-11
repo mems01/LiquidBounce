@@ -42,7 +42,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(LivingEntity.class)
+@Mixin(value = LivingEntity.class)
 public abstract class MixinLivingEntity extends MixinEntity {
 
     @Shadow
@@ -101,7 +101,7 @@ public abstract class MixinLivingEntity extends MixinEntity {
      * <p>
      * Jump according to modified rotation. Prevents detection by movement sensitive anticheats such as AAC, Hawk, Intave, etc.
      */
-    @Redirect(method = "jump", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getYaw()F"))
+    @Redirect(method = "jump", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;getYaw()F", ordinal = 0))
     private float hookFixRotation(LivingEntity instance) {
         if (instance != MinecraftClient.getInstance().player || RotationManager.INSTANCE.getActiveConfigurable() == null || !RotationManager.INSTANCE.getActiveConfigurable().getFixVelocity()) {
             return instance.getYaw();

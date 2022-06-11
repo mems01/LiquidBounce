@@ -47,10 +47,11 @@ import net.minecraft.entity.LivingEntity
 import net.minecraft.entity.attribute.EntityAttributes
 import net.minecraft.entity.player.PlayerEntity
 import net.minecraft.item.AxeItem
-import net.minecraft.network.packet.c2s.play.*
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
+import net.minecraft.network.packet.c2s.play.CloseHandledScreenC2SPacket
+import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket
+import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket
 import net.minecraft.util.Hand
-import net.minecraft.util.math.BlockPos
-import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.world.GameMode
 import kotlin.math.sqrt
@@ -162,22 +163,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
                     network.sendPacket(CloseHandledScreenC2SPacket(0))
                 }
 
-                val blocking = player.isBlocking
-
-                // Make sure to unblock now
-                if (blocking) {
-                    network.sendPacket(
-                        PlayerActionC2SPacket(
-                            PlayerActionC2SPacket.Action.RELEASE_USE_ITEM, BlockPos.ORIGIN, Direction.DOWN
-                        )
-                    )
-
-                    // Wait until the un-blocking delay time is up
-                    if (blockingTicks > 0) {
-                        wait(blockingTicks)
-                    }
-                }
-
                 // Fail rate
                 if (failRate > 0 && failRate > Random.nextInt(100)) {
                     // Fail rate should always make sure to swing the hand, so the server-side knows you missed the enemy.
@@ -191,16 +176,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
                 } else {
                     // Attack enemy
                     attackEntity(raycastedEntity)
-                }
-
-                // Make sure to block again
-                if (blocking) {
-                    // Wait until the blocking delay time is up
-                    if (blockingTicks > 0) {
-                        wait(blockingTicks)
-                    }
-
-                    network.sendPacket(PlayerInteractItemC2SPacket(player.activeHand))
                 }
 
                 // Make sure to reopen inventory

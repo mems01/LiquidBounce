@@ -31,6 +31,7 @@ import net.minecraft.block.Blocks
 import net.minecraft.item.ItemUsageContext
 import net.minecraft.item.Items
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket
+import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket
 import net.minecraft.util.ActionResult
@@ -49,7 +50,7 @@ object ModuleIgnite : Module("Ignite", Category.WORLD) {
     // Target
     private val targetTracker = tree(TargetTracker())
 
-    val networkTickHandler = repeatable { event ->
+    val networkTickHandler = repeatable {
         val player = mc.player ?: return@repeatable
 
         val slot = findHotbarSlot(Items.LAVA_BUCKET) ?: return@repeatable
@@ -60,7 +61,6 @@ object ModuleIgnite : Module("Ignite", Category.WORLD) {
             }
 
             val pos = enemy.blockPos
-
             val state = pos.getState()
 
             if (state?.block == Blocks.LAVA) {
@@ -72,23 +72,19 @@ object ModuleIgnite : Module("Ignite", Category.WORLD) {
             val rotation = currentTarget.rotation.fixedSensitivity() ?: continue
             val rayTraceResult = raycast(4.5, rotation) ?: return@repeatable
 
-            if (rayTraceResult.type != HitResult.Type.BLOCK) {
+            if (rayTraceResult.type != HitResult.Type.BLOCK || rayTraceResult.side != currentTarget.direction || rayTraceResult.blockPos != currentTarget.blockPos) {
                 continue
             }
 
-            player.networkHandler.sendPacket(
-                PlayerMoveC2SPacket.LookAndOnGround(
-                    rotation.yaw,
-                    rotation.pitch,
-                    player.isOnGround
-                )
-            )
+            network.sendPacket(PlayerMoveC2SPacket.LookAndOnGround(rotation.yaw, rotation.pitch, player.isOnGround))
 
             if (slot != player.inventory.selectedSlot) {
                 player.networkHandler.sendPacket(UpdateSelectedSlotC2SPacket(slot))
             }
 
             player.networkHandler.sendPacket(PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, rayTraceResult))
+            player.networkHandler.sendPacket(PlayerInteractItemC2SPacket(Hand.MAIN_HAND))
+
             val itemUsageContext = ItemUsageContext(player, Hand.MAIN_HAND, rayTraceResult)
 
             val itemStack = player.inventory.getStack(slot)

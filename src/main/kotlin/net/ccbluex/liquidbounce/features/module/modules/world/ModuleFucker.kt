@@ -31,11 +31,14 @@ import net.ccbluex.liquidbounce.utils.block.getState
 import net.ccbluex.liquidbounce.utils.block.searchBlocksInCuboid
 import net.ccbluex.liquidbounce.utils.entity.eyesPos
 import net.ccbluex.liquidbounce.utils.entity.getNearestPoint
+import net.minecraft.block.BedBlock
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket
+import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
 import net.minecraft.util.ActionResult
+import net.minecraft.util.DyeColor
 import net.minecraft.util.Hand
 import net.minecraft.util.hit.HitResult
 import net.minecraft.util.math.BlockPos
@@ -59,7 +62,7 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
         }
     }
     private val visualSwing by boolean("VisualSwing", true)
-    private val targets by blocks("Target", hashSetOf(Blocks.DRAGON_EGG))
+    private val targets by blocks("Target", hashSetOf(Blocks.RED_BED))
     private val action by enumChoice("Action", DestroyAction.USE, DestroyAction.values())
     private val throughWalls by boolean("ThroughWalls", false)
 
@@ -87,10 +90,7 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
         val serverRotation = RotationManager.serverRotation ?: return@repeatable
 
         val rayTraceResult = raytraceBlock(
-            range.toDouble(),
-            serverRotation,
-            curr.pos,
-            curr.pos.getState() ?: return@repeatable
+            range.toDouble(), serverRotation, curr.pos, curr.pos.getState() ?: return@repeatable
         )
 
         if (rayTraceResult?.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr.pos) {
@@ -99,13 +99,10 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
 
         if (curr.action == DestroyAction.USE) {
             if (interaction.interactBlock(
-                    player,
-                    mc.world!!,
-                    Hand.MAIN_HAND,
-                    rayTraceResult
+                    player, mc.world, Hand.MAIN_HAND, rayTraceResult
                 ) == ActionResult.SUCCESS
             ) {
-                player.swingHand(Hand.MAIN_HAND)
+                swingHand()
             }
 
             wait { delay }
@@ -113,17 +110,22 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
             return@repeatable
         } else {
             val blockPos = rayTraceResult.blockPos
+            val state = blockPos.getState() ?: return@repeatable
 
-            if (!blockPos.getState()!!.isAir) {
+            if (!state.isAir) {
                 val direction = rayTraceResult.side
 
-                if (mc.interactionManager!!.updateBlockBreakingProgress(blockPos, direction)) {
-                    if (visualSwing) {
-                        player.swingHand(Hand.MAIN_HAND)
-                    } else {
-                        network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
-                    }
-                }
+                network.sendPacket(
+                    PlayerActionC2SPacket(
+                        PlayerActionC2SPacket.Action.START_DESTROY_BLOCK, blockPos, direction
+                    )
+                )
+                swingHand()
+                network.sendPacket(
+                    PlayerActionC2SPacket(
+                        PlayerActionC2SPacket.Action.STOP_DESTROY_BLOCK, blockPos, direction
+                    )
+                )
             }
         }
     }
@@ -133,27 +135,22 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
 
         val targetedBlocks = hashSetOf<Block>()
 
-        targetedBlocks.addAll(targets)
+        targetedBlocks.addAll(listOf(Blocks.RED_BED))
 
         val radius = range + 1
         val radiusSquared = radius * radius
-        val eyesPos = mc.player!!.eyesPos
+        val eyesPos = player.eyesPos
 
         val blockToProcess = searchBlocksInCuboid(radius.toInt()) { pos, state ->
             targetedBlocks.contains(state.block) && getNearestPoint(
-                eyesPos,
-                Box(pos, pos.add(1, 1, 1))
+                eyesPos, Box(pos, pos.add(1, 1, 1))
             ).squaredDistanceTo(eyesPos) <= radiusSquared
         }.minByOrNull { it.first.getCenterDistanceSquared() } ?: return
 
         val (pos, state) = blockToProcess
 
         val rt = RotationManager.raytraceBlock(
-            player.eyesPos,
-            pos,
-            state,
-            range = range.toDouble(),
-            wallsRange = wallRange.toDouble()
+            player.eyesPos, pos, state, range = range.toDouble(), wallsRange = wallRange.toDouble()
         )
 
         // We got a free angle at the block? Cool.
@@ -179,6 +176,14 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
         if (raytraceResult.type != HitResult.Type.BLOCK) return
 
         this.currentTarget = DestroyerTarget(raytraceResult.blockPos, DestroyAction.DESTROY)
+    }
+
+    private fun swingHand() {
+        if (visualSwing) {
+            player.swingHand(Hand.MAIN_HAND)
+        } else {
+            network.sendPacket(HandSwingC2SPacket(Hand.MAIN_HAND))
+        }
     }
 
     data class DestroyerTarget(val pos: BlockPos, val action: DestroyAction)
