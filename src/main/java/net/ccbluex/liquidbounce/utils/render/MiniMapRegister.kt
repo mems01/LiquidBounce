@@ -86,7 +86,8 @@ object MiniMapRegister : MinecraftInstance() {
                     val bp = BlockPos(x, chunk.getHeightValue(x, z) - 1, z)
                     val blockState = chunk.getBlockState(bp)
 
-                    rgbValues[rgbValues.size - (z * 16 + x + 1)] = blockState.block.getMapColor(blockState).colorValue or (0xFF shl 24)
+                    rgbValues[rgbValues.size - (z * 16 + x + 1)] =
+                        blockState.block.getMapColor(blockState).colorValue or (0xFF shl 24)
                 }
             }
 
