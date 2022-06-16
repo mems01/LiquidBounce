@@ -22,7 +22,6 @@ import net.minecraft.entity.passive.EntityVillager
 import net.minecraft.entity.player.EntityPlayer
 import net.minecraft.util.AxisAlignedBB
 import net.minecraft.util.Vec3
-import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -31,11 +30,10 @@ import kotlin.math.sqrt
  */
 fun Entity.getDistanceToEntityBox(entity: Entity): Double {
     val eyes = this.getPositionEyes(1F)
-    val pos = getNearestPointBB(eyes, entity.entityBoundingBox)
-    val xDist = abs(pos.xCoord - eyes.xCoord)
-    val yDist = abs(pos.yCoord - eyes.yCoord)
-    val zDist = abs(pos.zCoord - eyes.zCoord)
-    return sqrt(xDist.pow(2) + yDist.pow(2) + zDist.pow(2))
+    val size = entity.collisionBorderSize.toDouble()
+    val pos = getNearestPointBB(eyes, entity.entityBoundingBox.expand(size, size, size))
+    val dist = pos.subtract(eyes)
+    return sqrt(dist.xCoord.pow(2) + dist.yCoord.pow(2) + dist.zCoord.pow(2))
 }
 
 fun getNearestPointBB(eye: Vec3, box: AxisAlignedBB): Vec3 {
@@ -43,29 +41,21 @@ fun getNearestPointBB(eye: Vec3, box: AxisAlignedBB): Vec3 {
     val destMins = doubleArrayOf(box.minX, box.minY, box.minZ)
     val destMaxs = doubleArrayOf(box.maxX, box.maxY, box.maxZ)
     for (i in 0..2) {
-        if (origin[i] > destMaxs[i]) origin[i] = destMaxs[i] else if (origin[i] < destMins[i]) origin[i] = destMins[i]
+        origin[i] = origin[i].coerceIn(destMins[i], destMaxs[i])
     }
     return Vec3(origin[0], origin[1], origin[2])
 }
 
 fun EntityPlayer.getPing(): Int {
-    val playerInfo = MinecraftInstance.mc.netHandler.getPlayerInfo(uniqueID)
-    return playerInfo?.responseTime ?: 0
+    return MinecraftInstance.mc.netHandler.getPlayerInfo(uniqueID).responseTime
 }
 
 fun Entity.isAnimal(): Boolean {
-    return this is EntityAnimal ||
-            this is EntitySquid ||
-            this is EntityGolem||
-            this is EntityBat
+    return this is EntityAnimal || this is EntitySquid || this is EntityGolem || this is EntityBat
 }
 
 fun Entity.isMob(): Boolean {
-    return this is EntityMob ||
-            this is EntityVillager||
-            this is EntitySlime
-            || this is EntityGhast ||
-            this is EntityDragon
+    return this is EntityMob || this is EntityVillager || this is EntitySlime || this is EntityGhast || this is EntityDragon
 }
 
 fun EntityPlayer.isClientFriend(): Boolean {
