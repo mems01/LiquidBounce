@@ -56,19 +56,18 @@ object ModuleESP : Module("ESP", Category.RENDER) {
 
     private val modes = choices("Mode", OutlineMode, arrayOf(OutlineMode, BoxMode))
 
-    private val colorMods = choices("ColorMode", StaticMode, arrayOf(StaticMode, RainbowMode))
+    private val colorModes = choices("ColorMode", StaticMode, arrayOf(StaticMode, RainbowMode))
 
     private object StaticMode : Choice("Static") {
-
         override val parent: ChoiceConfigurable
-            get() = colorMods
+            get() = colorModes
 
         val color by color("Color", Color4b.WHITE)
     }
 
     private object RainbowMode : Choice("Rainbow") {
         override val parent: ChoiceConfigurable
-            get() = colorMods
+            get() = colorModes
     }
 
     val teamColor by boolean("TeamColor", true)

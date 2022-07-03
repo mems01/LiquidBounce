@@ -32,9 +32,7 @@ import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.notification
 import net.ccbluex.liquidbounce.utils.client.regular
 import net.ccbluex.liquidbounce.utils.math.times
-import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.client.network.OtherClientPlayerEntity
-import net.minecraft.client.world.ClientWorld
 import net.minecraft.entity.Entity
 import net.minecraft.network.Packet
 import net.minecraft.network.packet.c2s.play.*
@@ -89,7 +87,18 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         }
 
         if (!Pulse.enabled && dummy) {
-            setupClone()
+            val clone = OtherClientPlayerEntity(world, player.gameProfile)
+
+            clone.headYaw = player.headYaw
+            clone.copyPositionAndRotation(player)
+            /**
+             * A different UUID has to be set, to avoid [fakePlayer] from being invisible to [player]
+             * @see net.minecraft.world.entity.EntityIndex.add
+             */
+            clone.uuid = UUID.randomUUID()
+            world.addEntity(clone.id, clone)
+
+            fakePlayer = clone
         }
 
         startPos = player.pos
@@ -129,7 +138,7 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         fakePlayer = null
     }
 
-    val packetHandler = handler<PacketEvent> { event ->
+    val packetHandler = handler<PacketEvent>(priority = -1) { event ->
         if (mc.player == null || disablelogger || event.origin != TransferOrigin.SEND) {
             return@handler
         }
@@ -212,26 +221,5 @@ object ModuleBlink : Module("Blink", Category.PLAYER) {
         player.velocity.times(0.0)
 
         player.updatePositionAndAngles(start.x, start.y, start.z, player.yaw, player.pitch)
-    }
-
-    fun createClone(player: ClientPlayerEntity, world: ClientWorld): OtherClientPlayerEntity {
-        val clone = OtherClientPlayerEntity(world, player.gameProfile)
-
-        clone.headYaw = player.headYaw
-        clone.copyPositionAndRotation(player)
-        /**
-         * A different UUID has to be set, to avoid [fakePlayer] from being invisible to [player]
-         * @see net.minecraft.world.entity.EntityIndex.add
-         */
-        clone.uuid = UUID.randomUUID()
-        return clone
-    }
-
-    private fun setupClone() {
-        val player = mc.player ?: return
-        val world = mc.world ?: return
-
-        fakePlayer = createClone(player, world)
-        world.addEntity(fakePlayer?.id ?: return, fakePlayer)
     }
 }

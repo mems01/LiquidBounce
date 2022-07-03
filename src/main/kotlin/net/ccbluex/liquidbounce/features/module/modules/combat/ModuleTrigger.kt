@@ -48,6 +48,7 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
     val failRate by int("FailRate", 0, 0..100)
     val onItemUse by enumChoice("OnItemUse", Use.WAIT, Use.values())
     val weapon by enumChoice("Weapon", Weapon.ANY, Weapon.values())
+    val delayPostStopUse by int("DelayPostStopUse", 0, 0..20)
 
     private val cpsTimer = CpsScheduler()
 
@@ -61,7 +62,11 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
 
             repeat(clicks) {
                 if (player.usingItem) {
-                    this@repeatable.encounterItemUse()
+                    val encounterItemUse = this.encounterItemUse()
+
+                    if (encounterItemUse) {
+                        return@repeatable
+                    }
                 }
 
                 if (failRate > 0 && failRate > Random.nextInt(100)) {
@@ -85,11 +90,19 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
         }
     }
 
-    private suspend fun <T : Event> Sequence<T>.encounterItemUse() {
-        val player = mc.player ?: return
+    private suspend fun <T : Event> Sequence<T>.encounterItemUse(): Boolean {
+        val player = mc.player ?: return true
 
-        when (onItemUse) {
-            Use.WAIT -> this.waitUntil { !player.isUsingItem }
+        return when (onItemUse) {
+            Use.WAIT -> {
+                this.waitUntil { !player.isUsingItem }
+
+                if (delayPostStopUse > 0) {
+                    wait(delayPostStopUse)
+                }
+
+                true
+            }
             Use.STOP -> {
                 network.sendPacket(
                     PlayerActionC2SPacket(
@@ -97,8 +110,14 @@ object ModuleTrigger : Module("Trigger", Category.COMBAT) {
                     )
                 )
                 player.stopUsingItem()
+
+                if (delayPostStopUse > 0) {
+                    wait(delayPostStopUse)
+                }
+
+                true
             }
-            Use.IGNORE -> return
+            Use.IGNORE -> false
         }
     }
 
