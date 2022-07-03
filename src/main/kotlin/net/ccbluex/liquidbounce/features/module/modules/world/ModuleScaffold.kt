@@ -18,6 +18,9 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.world
 
+import net.ccbluex.liquidbounce.event.EventState
+import net.ccbluex.liquidbounce.event.PlayerNetworkMovementTickEvent
+import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
@@ -92,12 +95,20 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
     val shouldGoDown: Boolean
         get() = this.down && mc.options.sneakKey.isPressed
 
-    val networkTickHandler = repeatable {
+    val rotationUpdateHandler = handler<PlayerNetworkMovementTickEvent> {
+        if (it.state != EventState.PRE) {
+            return@handler
+        }
+
         currentTarget = updateTarget(getTargetedPosition())
 
-        val target = currentTarget ?: return@repeatable
+        val target = currentTarget ?: return@handler
 
         RotationManager.aimAt(target.rotation, ticks = 20, configurable = rotationsConfigurable)
+    }
+
+    val networkTickHandler = repeatable {
+        val target = currentTarget ?: return@repeatable
 
         val serverRotation = RotationManager.serverRotation ?: return@repeatable
         val rayTraceResult = raycast(4.5, serverRotation) ?: return@repeatable
@@ -143,7 +154,12 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
             }
 
             currentTarget = null
-            wait(delay.random())
+
+            delay.random().let {
+                if (it > 0) {
+                    wait { it }
+                }
+            }
         }
     }
 

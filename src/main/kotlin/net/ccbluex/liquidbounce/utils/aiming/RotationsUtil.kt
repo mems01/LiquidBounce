@@ -86,7 +86,7 @@ object RotationManager : Listenable {
         range: Double,
         wallsRange: Double,
         expectedTarget: BlockPos? = null,
-        pattern: Pattern = GaussianPattern
+        pattern: Pattern = GaussianPattern,
     ): VecRotation? {
         val preferredSpot = pattern.spot(box)
         val preferredRotation = makeRotation(preferredSpot, eyes)
@@ -344,22 +344,21 @@ object RotationManager : Listenable {
         val packet = event.packet
 
         if (packet is PlayerMoveC2SPacket) {
+            if (!packet.changesLook()) {
+                return@handler
+            }
+
             if (!deactivateManipulation) {
                 currentRotation?.fixedSensitivity()?.let {
-                    val (serverYaw, serverPitch) = serverRotation ?: Rotation(0f, 0f)
-
-                    if (it.yaw != serverYaw || it.pitch != serverPitch) {
+                    if (rotationDifference(it) != 0.0) {
                         packet.yaw = it.yaw
                         packet.pitch = it.pitch
-                        packet.changeLook = true
                     }
                 }
             }
 
             // Update current rotation
-            if (packet.changeLook) {
-                serverRotation = Rotation(packet.yaw, packet.pitch)
-            }
+            serverRotation = Rotation(packet.yaw, packet.pitch)
         }
     }
 

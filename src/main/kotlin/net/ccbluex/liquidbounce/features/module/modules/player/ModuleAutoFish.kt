@@ -53,11 +53,9 @@ object ModuleAutoFish : Module("AutoFish", Category.PLAYER) {
 
     override fun disable() {
         caughtFish = false
-        mc.options.useKey.isPressed = false
     }
 
     val repeatable = repeatable {
-        mc.options.useKey.isPressed = true
         if (caughtFish) {
             for (hand in arrayOf(Hand.MAIN_HAND, Hand.OFF_HAND)) {
                 if (player.getEquippedStack(hand.equipmentSlot).item !is FishingRodItem) {
