@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.features.module.modules.fun.ModuleDerp;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoSlow;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModulePerfectHorseJump;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleStep;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
@@ -247,5 +248,15 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         }
 
         return instance.getPitch();
+    }
+
+    @ModifyVariable(method = "sendMovementPackets", at = @At(value = "STORE"), ordinal = 2)
+    private boolean hookFreeCamOnlyTicksSinceLastPosition(boolean value) {
+        return ModuleFreeCam.INSTANCE.applyOnlyTicksSinceLastPosition(value);
+    }
+
+    @Redirect(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;onGround:Z", ordinal = 4))
+    private boolean hookFreeCamPreventSendingOnGround(ClientPlayerEntity instance) {
+        return ModuleFreeCam.INSTANCE.preventSendingOnGroundPacket(instance.isOnGround());
     }
 }

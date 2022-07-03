@@ -25,14 +25,17 @@ import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.modules.player.ModuleBlink.createClone
-import net.ccbluex.liquidbounce.utils.client.chat
+import net.ccbluex.liquidbounce.utils.block.canStandOn
 import net.ccbluex.liquidbounce.utils.entity.strafe
 import net.ccbluex.liquidbounce.utils.math.times
 import net.minecraft.client.network.OtherClientPlayerEntity
 import net.minecraft.entity.Entity
+import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
+import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket
 import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
+import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 
 /**
@@ -47,6 +50,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     private val fly by boolean("Fly", true)
     private val collision by boolean("Collision", false)
     private val resetMotion by boolean("ResetMotion", true)
+    private val visuals by boolean("Visuals", false)
 
     private var fakePlayer: OtherClientPlayerEntity? = null
     private var velocity = Vec3d.ZERO
@@ -54,34 +58,49 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     private var ground = false
 
     override fun enable() {
-        if (resetMotion) {
+        /**
+         * Velocity Y must always be set to player's velocity Y, so we don't trigger [PlayerMoveC2SPacket.OnGroundOnly] on [disable]
+         */
+        velocity = if (resetMotion) {
             player.velocity.times(0.0)
-        }
+            Vec3d.ZERO
+        } else {
+            player.velocity
+        }.withAxis(Direction.Axis.Y, player.velocity.y)
 
-        velocity = Vec3d.ZERO
         pos = player.pos
         ground = player.isOnGround
 
-        fakePlayer = createClone(player, world)
-        world.addEntity((fakePlayer ?: return).id, fakePlayer)
-
-        if (!collision) {
-            player.noClip = true
+        fakePlayer = createClone(player, world).also {
+            world.addEntity(it.id, it)
         }
     }
 
     override fun disable() {
         player.velocity = velocity
+        player.updatePosition(pos.x, pos.y, pos.z)
 
         fakePlayer?.let {
-            player.updatePositionAndAngles(it.x, it.y, it.z, player.yaw, player.pitch)
             world.removeEntity(it.id, Entity.RemovalReason.DISCARDED)
         }
+
+        /**
+         * Prevents the client from sending [PlayerMoveC2SPacket.OnGroundOnly], so it's not detected for ground spoof.
+         */
+        player.isOnGround = ground
+        player.lastOnGround = ground
 
         fakePlayer = null
     }
 
     val repeatable = repeatable {
+        fakePlayer?.let {
+            if (!ground && it.blockPos.add(0.0, -0.01, 0.0).canStandOn()) {
+                ground = true
+                network.connection.send(PlayerMoveC2SPacket.OnGroundOnly(true))
+            }
+        }
+
         // Just to make sure it stays enabled
         if (!collision) {
             player.noClip = true
@@ -102,33 +121,85 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     }
 
     val packetHandler = handler<PacketEvent> { event ->
-        val clone = fakePlayer ?: return@handler
-
         when (val packet = event.packet) {
-            // For better FreeCam detecting AntiCheats, we need to prove to them that the player's moving
+            /**
+             * For better FreeCam detecting AntiCheats such as BAC, we must somewhat simulate a player who doesn't move but rotates
+             * and sends [PlayerMoveC2SPacket.PositionAndOnGround] packets every 20 ticks, just like an AFK player, with the help of the [applyOnlyTicksSinceLastPosition] function.
+             * @see net.minecraft.client.network.ClientPlayerEntity.sendMovementPackets, bl3 variable
+             */
             is PlayerMoveC2SPacket -> {
-                chat(packet.toString())
-                if (packet.changePosition) {
+                if (packet.changesPosition()) {
                     packet.x = pos.x
                     packet.y = pos.y
                     packet.z = pos.z
                 }
-                if (packet.onGround != ground) {
-                    packet.onGround = ground
+
+                packet.onGround = ground
+
+                if (packet.changesLook()) {
+                    val yaw = player.yaw
+                    val pitch = player.pitch
+
+                    if (visuals) {
+                        fakePlayer?.let {
+                            it.yaw = yaw
+                            it.headYaw = yaw
+                            it.pitch = pitch
+                        }
+                    }
+
+                    packet.yaw = yaw
+                    packet.pitch = pitch
                 }
-                if (packet.changeLook) {
-                    packet.yaw = player.yaw
-                    packet.pitch = player.pitch
+            }
+            is PlayerPositionLookS2CPacket -> {
+                fakePlayer?.updatePosition(packet.x, packet.y, packet.z)
+
+                network.connection.send(TeleportConfirmC2SPacket(packet.teleportId))
+                network.connection.send(
+                    PlayerMoveC2SPacket.Full(
+                        packet.x, packet.y, packet.z, packet.yaw, packet.pitch, false
+                    )
+                )
+
+                pos = Vec3d(packet.x, packet.y, packet.z)
+                ground = false
+
+                event.cancelEvent()
+            }
+            is ClientCommandC2SPacket -> {
+                val allowedPackets = arrayOf(
+                    ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY,
+                    ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY,
+                    ClientCommandC2SPacket.Mode.OPEN_INVENTORY
+                )
+
+                if (packet.mode !in allowedPackets) {
+                    event.cancelEvent()
                 }
             }
             is PlayerActionC2SPacket -> event.cancelEvent()
-            // In case of a teleport
-            is PlayerPositionLookS2CPacket -> {
-                clone.updatePosition(packet.x, packet.y, packet.z)
-                pos = Vec3d(packet.x, packet.y, packet.z)
-                // Reset the motion
-                event.cancelEvent()
-            }
         }
     }
+
+    fun applyOnlyTicksSinceLastPosition(original: Boolean): Boolean {
+        val player = mc.player ?: return original
+
+        if (!enabled) {
+            return original
+        }
+
+        return player.ticksSinceLastPositionPacketSent >= 20
+    }
+
+    fun preventSendingOnGroundPacket(original: Boolean): Boolean {
+        val player = mc.player ?: return original
+
+        if (!enabled) {
+            return original
+        }
+
+        return player.lastOnGround
+    }
+
 }
