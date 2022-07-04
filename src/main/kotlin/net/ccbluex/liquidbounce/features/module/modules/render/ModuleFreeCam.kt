@@ -123,7 +123,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     val packetHandler = handler<PacketEvent> { event ->
         when (val packet = event.packet) {
             /**
-             * For better FreeCam detecting AntiCheats such as BAC, we must somewhat simulate a player who doesn't move but rotates
+             * For 1:1 simulation detecting AntiCheats such as Grim, Karhu, Intave or FreeCam detecting AntiCheats like BAC we must somewhat simulate a player who doesn't move but rotates
              * and sends [PlayerMoveC2SPacket.PositionAndOnGround] packets every 20 ticks, just like an AFK player, with the help of the [applyOnlyTicksSinceLastPosition] function.
              * @see net.minecraft.client.network.ClientPlayerEntity.sendMovementPackets, bl3 variable
              */
