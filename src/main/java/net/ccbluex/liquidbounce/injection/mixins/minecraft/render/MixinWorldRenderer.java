@@ -21,19 +21,25 @@ package net.ccbluex.liquidbounce.injection.mixins.minecraft.render;
 
 import net.ccbluex.liquidbounce.common.RenderingFlags;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleESP;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.render.engine.Color4b;
 import net.ccbluex.liquidbounce.render.shaders.OutlineShader;
 import net.ccbluex.liquidbounce.utils.combat.CombatExtensionsKt;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gl.Framebuffer;
 import net.minecraft.client.render.*;
+import net.minecraft.client.render.entity.EntityRenderDispatcher;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.util.math.Matrix4f;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import static net.ccbluex.liquidbounce.render.utils.ColorUtilsKt.rainbow;
@@ -43,6 +49,15 @@ public abstract class MixinWorldRenderer {
     @Shadow
     @Nullable
     public Framebuffer entityOutlinesFramebuffer;
+    @Shadow
+    @Final
+    private EntityRenderDispatcher entityRenderDispatcher;
+    @Shadow
+    @Final
+    private BufferBuilderStorage bufferBuilders;
+    @Shadow
+    @Final
+    private MinecraftClient client;
 
     @Shadow
     protected abstract void renderEntity(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers);
@@ -110,5 +125,10 @@ public abstract class MixinWorldRenderer {
     @Inject(method = "onResized", at = @At("HEAD"))
     private void onResized(int w, int h, CallbackInfo info) {
         OutlineShader.INSTANCE.onResized(w, h);
+    }
+
+    @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSleeping()Z"))
+    private boolean hookFreeCamAllowRenderingPlayer(LivingEntity instance) {
+        return ModuleFreeCam.INSTANCE.renderPlayerFromAllPerspectives(instance.isSleeping());
     }
 }

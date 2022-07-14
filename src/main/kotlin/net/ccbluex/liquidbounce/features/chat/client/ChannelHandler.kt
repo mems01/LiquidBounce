@@ -67,6 +67,7 @@ class ChannelHandler(private val handshaker: WebSocketClientHandshaker) : Simple
      *
      * Sub-classes may override this method to change behavior.
      */
+    @Deprecated("Deprecated in Java")
     override fun exceptionCaught(ctx: ChannelHandlerContext, cause: Throwable) {
         logger.error("LiquidChat error", cause)
         Chat.onError(cause)

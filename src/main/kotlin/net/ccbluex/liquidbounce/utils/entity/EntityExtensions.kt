@@ -23,6 +23,7 @@ import net.ccbluex.liquidbounce.render.engine.Vec3
 import net.ccbluex.liquidbounce.utils.aiming.Rotation
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.minecraft.client.input.Input
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -35,6 +36,9 @@ import kotlin.math.sqrt
 
 val ClientPlayerEntity.moving
     get() = input.movementForward != 0.0f || input.movementSideways != 0.0f
+
+val ClientPlayerEntity.pressingMovementButton
+    get() = input.pressingForward || input.pressingBack || input.pressingLeft || input.pressingRight
 
 val Entity.exactPosition
     get() = Triple(x, y, z)
@@ -107,11 +111,30 @@ fun Vec3d.strafe(yaw: Float, speed: Double = sqrtSpeed) {
     z = cos(angle) * speed
 }
 
+fun Vec3d.strafe(yaw: Float, speed: Double = sqrtSpeed, keyboardCheck: Boolean = false) {
+    val player = mc.player ?: return
+
+    if (keyboardCheck && !player.pressingMovementButton) {
+        x = 0.0
+        z = 0.0
+        return
+    }
+
+    this.strafe(yaw, speed)
+}
+
 val ClientPlayerEntity.eyesPos: Vec3d
     get() = Vec3d(pos.x, boundingBox.minY + getEyeHeight(pose), pos.z)
 
 val ClientPlayerEntity.rotation: Rotation
     get() = Rotation(yaw, pitch)
+
+val Input.yAxisMovement: Float
+    get() = when {
+        jumping -> 1.0f
+        sneaking -> -1.0f
+        else -> 0.0f
+    }
 
 /**
  * Allows to calculate the distance between the current entity and [entity] from the nearest corner of the bounding box

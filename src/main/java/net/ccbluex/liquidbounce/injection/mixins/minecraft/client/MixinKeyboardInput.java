@@ -19,6 +19,7 @@
 package net.ccbluex.liquidbounce.injection.mixins.minecraft.client;
 
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleInventoryMove;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.minecraft.client.MinecraftClient;
@@ -32,9 +33,15 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(KeyboardInput.class)
 public class MixinKeyboardInput extends MixinInput {
+
+    @Inject(method = "getMovementMultiplier", at = @At("RETURN"), cancellable = true)
+    private static void hookFreeCamCanceledMovementInput(boolean positive, boolean negative, CallbackInfoReturnable<Float> cir) {
+        cir.setReturnValue(ModuleFreeCam.INSTANCE.cancelMovementInput(cir.getReturnValue()));
+    }
 
     /**
      * Hook inventory move module

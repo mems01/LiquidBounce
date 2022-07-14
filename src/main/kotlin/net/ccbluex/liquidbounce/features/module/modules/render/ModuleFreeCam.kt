@@ -19,24 +19,21 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.event.PacketEvent
+import net.ccbluex.liquidbounce.event.PlayerJumpEvent
+import net.ccbluex.liquidbounce.event.PlayerMoveEvent
+import net.ccbluex.liquidbounce.event.PlayerTickEvent
 import net.ccbluex.liquidbounce.event.handler
-import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
-import net.ccbluex.liquidbounce.features.module.modules.player.ModuleBlink.createClone
-import net.ccbluex.liquidbounce.utils.block.canStandOn
+import net.ccbluex.liquidbounce.utils.entity.directionYaw
 import net.ccbluex.liquidbounce.utils.entity.strafe
-import net.ccbluex.liquidbounce.utils.math.times
-import net.minecraft.client.network.OtherClientPlayerEntity
+import net.ccbluex.liquidbounce.utils.entity.yAxisMovement
+import net.ccbluex.liquidbounce.utils.math.minus
+import net.ccbluex.liquidbounce.utils.math.plus
 import net.minecraft.entity.Entity
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
-import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
-import net.minecraft.network.packet.c2s.play.TeleportConfirmC2SPacket
-import net.minecraft.network.packet.s2c.play.PlayerPositionLookS2CPacket
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
+import net.minecraft.util.math.Vec3i
 
 /**
  * FreeCam module
@@ -47,159 +44,96 @@ import net.minecraft.util.math.Vec3d
 object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
 
     private val speed by float("Speed", 1f, 0.1f..2f)
-    private val fly by boolean("Fly", true)
-    private val collision by boolean("Collision", false)
-    private val resetMotion by boolean("ResetMotion", true)
-    private val visuals by boolean("Visuals", false)
+    private val freeze by boolean("Freeze", false)
+    private val interactFromCamera by boolean("InteractFromCamera", false)
 
-    private var fakePlayer: OtherClientPlayerEntity? = null
-    private var velocity = Vec3d.ZERO
     private var pos = Vec3d.ZERO
-    private var ground = false
+    private var lastPos = Vec3d.ZERO
 
     override fun enable() {
-        /**
-         * Velocity Y must always be set to player's velocity Y, so we don't trigger [PlayerMoveC2SPacket.OnGroundOnly] on [disable]
-         */
-        velocity = if (resetMotion) {
-            player.velocity.times(0.0)
-            Vec3d.ZERO
-        } else {
-            player.velocity
-        }.withAxis(Direction.Axis.Y, player.velocity.y)
-
-        pos = player.pos
-        ground = player.isOnGround
-
-        fakePlayer = createClone(player, world).also {
-            world.addEntity(it.id, it)
-        }
+        updatePosition(player.eyePos, lastPosBeforePos = false, increase = false)
     }
 
-    override fun disable() {
-        player.velocity = velocity
-        player.updatePosition(pos.x, pos.y, pos.z)
-
-        fakePlayer?.let {
-            world.removeEntity(it.id, Entity.RemovalReason.DISCARDED)
+    val tickHandler = handler<PlayerTickEvent> {
+        if (player.age < 5) {
+            updatePosition(player.eyePos, lastPosBeforePos = false, increase = false)
         }
 
-        /**
-         * Prevents the client from sending [PlayerMoveC2SPacket.OnGroundOnly], so it's not detected for ground spoof.
-         */
-        player.isOnGround = ground
-        player.lastOnGround = ground
+        val speed = this.speed.toDouble()
 
-        fakePlayer = null
+        val velocity = Vec3d.of(Vec3i.ZERO).apply { strafe(player.directionYaw, speed, true) }
+            .withAxis(Direction.Axis.Y, player.input.yAxisMovement * speed)
+
+        updatePosition(velocity, lastPosBeforePos = true, increase = true)
     }
 
-    val repeatable = repeatable {
-        fakePlayer?.let {
-            if (!ground && it.blockPos.add(0.0, -0.01, 0.0).canStandOn()) {
-                ground = true
-                network.connection.send(PlayerMoveC2SPacket.OnGroundOnly(true))
-            }
-        }
-
-        // Just to make sure it stays enabled
-        if (!collision) {
-            player.noClip = true
-            player.fallDistance = 0f
-            player.isOnGround = false
-        }
-
-        if (fly) {
-            val speed = speed.toDouble()
-            player.strafe(speed = speed)
-
-            player.velocity.y = when {
-                mc.options.jumpKey.isPressed -> speed
-                mc.options.sneakKey.isPressed -> -speed
-                else -> 0.0
-            }
-        }
+    val jumpHandler = handler<PlayerJumpEvent> {
+        it.cancelEvent()
     }
 
-    val packetHandler = handler<PacketEvent> { event ->
-        when (val packet = event.packet) {
-            /**
-             * For 1:1 simulation detecting AntiCheats such as Grim, Karhu, Intave or FreeCam detecting AntiCheats like BAC we must somewhat simulate a player who doesn't move but rotates
-             * and sends [PlayerMoveC2SPacket.PositionAndOnGround] packets every 20 ticks, just like an AFK player, with the help of the [applyOnlyTicksSinceLastPosition] function.
-             * @see net.minecraft.client.network.ClientPlayerEntity.sendMovementPackets, bl3 variable
-             */
-            is PlayerMoveC2SPacket -> {
-                if (packet.changesPosition()) {
-                    packet.x = pos.x
-                    packet.y = pos.y
-                    packet.z = pos.z
-                }
-
-                packet.onGround = ground
-
-                if (packet.changesLook()) {
-                    val yaw = player.yaw
-                    val pitch = player.pitch
-
-                    if (visuals) {
-                        fakePlayer?.let {
-                            it.yaw = yaw
-                            it.headYaw = yaw
-                            it.pitch = pitch
-                        }
-                    }
-
-                    packet.yaw = yaw
-                    packet.pitch = pitch
-                }
-            }
-            is PlayerPositionLookS2CPacket -> {
-                fakePlayer?.updatePosition(packet.x, packet.y, packet.z)
-
-                network.connection.send(TeleportConfirmC2SPacket(packet.teleportId))
-                network.connection.send(
-                    PlayerMoveC2SPacket.Full(
-                        packet.x, packet.y, packet.z, packet.yaw, packet.pitch, false
-                    )
-                )
-
-                pos = Vec3d(packet.x, packet.y, packet.z)
-                ground = false
-
-                event.cancelEvent()
-            }
-            is ClientCommandC2SPacket -> {
-                val allowedPackets = arrayOf(
-                    ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY,
-                    ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY,
-                    ClientCommandC2SPacket.Mode.OPEN_INVENTORY
-                )
-
-                if (packet.mode !in allowedPackets) {
-                    event.cancelEvent()
-                }
-            }
-            is PlayerActionC2SPacket -> event.cancelEvent()
+    val moveHandler = handler<PlayerMoveEvent> {
+        if (!freeze) {
+            return@handler
         }
+
+        it.movement.x = 0.0
+        it.movement.y = 0.0
+        it.movement.z = 0.0
     }
 
-    fun applyOnlyTicksSinceLastPosition(original: Boolean): Boolean {
-        val player = mc.player ?: return original
+    fun applyPosition(entity: Entity, tickDelta: Float) {
+        val player = mc.player ?: return
+        val camera = mc.gameRenderer.camera ?: return
 
+        if (!enabled || entity != player) {
+            return
+        }
+
+        return camera.setPos(interpolateCustomPosition(tickDelta, lastPos, pos))
+    }
+
+    fun cancelMovementInput(original: Float): Float {
         if (!enabled) {
             return original
         }
 
-        return player.ticksSinceLastPositionPacketSent >= 20
+        return 0.0f
     }
 
-    fun preventSendingOnGroundPacket(original: Boolean): Boolean {
-        val player = mc.player ?: return original
-
+    fun renderPlayerFromAllPerspectives(original: Boolean): Boolean {
         if (!enabled) {
             return original
         }
 
-        return player.lastOnGround
+        return original || !mc.gameRenderer.camera.isThirdPerson
+    }
+
+    fun modifyRaycastPosition(entity: Entity, original: Vec3d): Vec3d {
+        val player = mc.player ?: original
+
+        if (!enabled || entity != player || !interactFromCamera) {
+            return original
+        }
+
+        return pos
+    }
+
+    private fun updatePosition(newPos: Vec3d, lastPosBeforePos: Boolean, increase: Boolean) {
+        if (lastPosBeforePos) {
+            lastPos = pos
+        }
+        pos += if (increase) newPos else newPos - pos
+        if (!lastPosBeforePos) {
+            lastPos = pos
+        }
+    }
+
+    private fun interpolateCustomPosition(tickDelta: Float, lastPos: Vec3d, currPos: Vec3d): Vec3d {
+        return Vec3d(
+            lastPos.x + (currPos.x - lastPos.x) * tickDelta,
+            lastPos.y + (currPos.y - lastPos.y) * tickDelta,
+            lastPos.z + (currPos.z - lastPos.z) * tickDelta
+        )
     }
 
 }
