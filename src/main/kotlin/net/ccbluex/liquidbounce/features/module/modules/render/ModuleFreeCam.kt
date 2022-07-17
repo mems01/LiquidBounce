@@ -45,7 +45,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
 
     private val speed by float("Speed", 1f, 0.1f..2f)
     private val freeze by boolean("Freeze", false)
-    private val interactFromCamera by boolean("InteractFromCamera", false)
+    private val disableInteraction by boolean("DisableInteraction", true)
 
     private var pos = Vec3d.ZERO
     private var lastPos = Vec3d.ZERO
@@ -108,15 +108,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
         return original || !mc.gameRenderer.camera.isThirdPerson
     }
 
-    fun modifyRaycastPosition(entity: Entity, original: Vec3d): Vec3d {
-        val player = mc.player ?: original
-
-        if (!enabled || entity != player || !interactFromCamera) {
-            return original
-        }
-
-        return pos
-    }
+    fun shouldDisableInteraction() = enabled && disableInteraction
 
     private fun updatePosition(newPos: Vec3d, lastPosBeforePos: Boolean, increase: Boolean) {
         if (lastPosBeforePos) {

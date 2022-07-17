@@ -21,6 +21,7 @@ package net.ccbluex.liquidbounce.injection.mixins.minecraft.client;
 import net.ccbluex.liquidbounce.LiquidBounce;
 import net.ccbluex.liquidbounce.common.RenderingFlags;
 import net.ccbluex.liquidbounce.event.*;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleXRay;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.MinecraftClient;
@@ -194,6 +195,20 @@ public abstract class MixinMinecraftClient {
     private void injectOutlineESPFix(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (RenderingFlags.isCurrentlyRenderingEntityOutline().get()) {
             cir.setReturnValue(true);
+        }
+    }
+
+    @Inject(method = {"doItemUse", "handleBlockBreaking"}, at = @At("HEAD"), cancellable = true)
+    private void hookFreeCamDisableInteraction(CallbackInfo ci) {
+        if (ModuleFreeCam.INSTANCE.shouldDisableInteraction()) {
+            ci.cancel();
+        }
+    }
+
+    @Inject(method = "doAttack", at = @At("HEAD"), cancellable = true)
+    private void hookFreeCamDisableAttacking(CallbackInfoReturnable<Boolean> cir) {
+        if (ModuleFreeCam.INSTANCE.shouldDisableInteraction()) {
+            cir.setReturnValue(false);
         }
     }
 

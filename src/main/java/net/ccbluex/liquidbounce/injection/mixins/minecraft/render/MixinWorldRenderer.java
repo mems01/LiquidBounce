@@ -128,7 +128,7 @@ public abstract class MixinWorldRenderer {
     }
 
     @Redirect(method = "render", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/LivingEntity;isSleeping()Z"))
-    private boolean hookFreeCamAllowRenderingPlayer(LivingEntity instance) {
+    private boolean hookFreeCamRenderPlayerFromAllPerspectives(LivingEntity instance) {
         return ModuleFreeCam.INSTANCE.renderPlayerFromAllPerspectives(instance.isSleeping());
     }
 }

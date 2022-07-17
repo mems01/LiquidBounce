@@ -21,7 +21,6 @@ package net.ccbluex.liquidbounce.injection.mixins.minecraft.entity;
 
 import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.modules.exploit.ModuleNoPitchLimit;
-import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.fluid.Fluid;
@@ -121,8 +120,4 @@ public abstract class MixinEntity {
         return instance.isPushedByFluids();
     }
 
-    @Redirect(method = "raycast", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/Entity;getCameraPosVec(F)Lnet/minecraft/util/math/Vec3d;"))
-    private Vec3d hookFreeCamInteractUsingCamera(Entity instance, float tickDelta) {
-        return ModuleFreeCam.INSTANCE.modifyRaycastPosition(instance, instance.getCameraPosVec(tickDelta));
-    }
 }
