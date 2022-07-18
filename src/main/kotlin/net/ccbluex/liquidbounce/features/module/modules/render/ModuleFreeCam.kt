@@ -31,6 +31,7 @@ import net.ccbluex.liquidbounce.utils.entity.yAxisMovement
 import net.ccbluex.liquidbounce.utils.math.minus
 import net.ccbluex.liquidbounce.utils.math.plus
 import net.minecraft.entity.Entity
+import net.minecraft.entity.LivingEntity
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.Vec3i
@@ -45,7 +46,7 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
 
     private val speed by float("Speed", 1f, 0.1f..2f)
     private val freeze by boolean("Freeze", false)
-    private val disableInteraction by boolean("DisableInteraction", true)
+    private val interactFromCamera by boolean("InteractFromCamera", false)
 
     private var pos = Vec3d.ZERO
     private var lastPos = Vec3d.ZERO
@@ -100,15 +101,25 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
         return 0.0f
     }
 
-    fun renderPlayerFromAllPerspectives(original: Boolean): Boolean {
-        if (!enabled) {
+    fun renderPlayerFromAllPerspectives(entity: LivingEntity): Boolean {
+        val player = mc.player ?: return entity.isSleeping
+
+        if (!enabled || entity != player) {
+            return entity.isSleeping
+        }
+
+        return entity.isSleeping || !mc.gameRenderer.camera.isThirdPerson
+    }
+
+    fun modifyRaycast(original: Vec3d, entity: Entity, tickDelta: Float): Vec3d {
+        val player = mc.player ?: return original
+
+        if (!enabled || entity != player || !interactFromCamera) {
             return original
         }
 
-        return original || !mc.gameRenderer.camera.isThirdPerson
+        return interpolateCustomPosition(tickDelta, lastPos, pos)
     }
-
-    fun shouldDisableInteraction() = enabled && disableInteraction
 
     private fun updatePosition(newPos: Vec3d, lastPosBeforePos: Boolean, increase: Boolean) {
         if (lastPosBeforePos) {

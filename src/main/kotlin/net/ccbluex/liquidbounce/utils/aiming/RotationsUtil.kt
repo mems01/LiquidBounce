@@ -20,10 +20,7 @@
 package net.ccbluex.liquidbounce.utils.aiming
 
 import net.ccbluex.liquidbounce.config.Configurable
-import net.ccbluex.liquidbounce.event.Listenable
-import net.ccbluex.liquidbounce.event.PacketEvent
-import net.ccbluex.liquidbounce.event.PlayerVelocityStrafe
-import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.rotation
 import net.ccbluex.liquidbounce.utils.kotlin.step
@@ -267,11 +264,6 @@ object RotationManager : Listenable {
      * Update current rotation to new rotation step
      */
     fun update() {
-        // Update reset ticks
-        if (ticksUntilReset > 0) {
-            ticksUntilReset--
-        }
-
         // Update patterns
         for (pattern in AIMING_PATTERNS) {
             pattern.update()
@@ -284,14 +276,14 @@ object RotationManager : Listenable {
         val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
-            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= turnSpeed) {
+            if (rotationDifference(currentRotation ?: return, playerRotation) <= turnSpeed) {
                 ticksUntilReset = -1
 
                 targetRotation = null
                 currentRotation = null
                 return
             }
-            currentRotation = limitAngleChange(currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
+            currentRotation = limitAngleChange(currentRotation ?: return, playerRotation, turnSpeed)
         } else if (targetRotation != null) {
             targetRotation?.let { targetRotation ->
                 currentRotation = limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed)
@@ -299,11 +291,11 @@ object RotationManager : Listenable {
         }
     }
 
-    fun needsUpdate(lastYaw: Float, lastPitch: Float): Boolean {
+    fun needsUpdate(): Boolean {
         // Check if something changed
-        val (currYaw, currPitch) = currentRotation?.fixedSensitivity() ?: return false
+        val currentRotation = currentRotation?.fixedSensitivity() ?: return false
 
-        return lastYaw != currYaw || lastPitch != currPitch
+        return rotationDifference(currentRotation) != 0.0
     }
 
     /**
@@ -327,8 +319,8 @@ object RotationManager : Listenable {
         val pitchDifference = angleDifference(targetRotation.pitch, currentRotation.pitch)
 
         return Rotation(
-            currentRotation.yaw + if (yawDifference > turnSpeed) turnSpeed else yawDifference.coerceAtLeast(-turnSpeed),
-            currentRotation.pitch + if (pitchDifference > turnSpeed) turnSpeed else pitchDifference.coerceAtLeast(-turnSpeed)
+            currentRotation.yaw + yawDifference.coerceIn(-turnSpeed, turnSpeed),
+            currentRotation.pitch + pitchDifference.coerceIn(-turnSpeed, turnSpeed)
         )
     }
 
@@ -340,32 +332,43 @@ object RotationManager : Listenable {
     /**
      * Modify server-side rotations
      */
-    private val packetHandler = handler<PacketEvent> { event ->
-        val packet = event.packet
 
-        if (packet is PlayerMoveC2SPacket) {
-            if (!packet.changesLook()) {
-                return@handler
-            }
-
-            if (!deactivateManipulation) {
-                currentRotation?.fixedSensitivity()?.let {
-                    if (rotationDifference(it) != 0.0) {
-                        packet.yaw = it.yaw
-                        packet.pitch = it.pitch
-                    }
-                }
-            }
-
-            // Update current rotation
-            serverRotation = Rotation(packet.yaw, packet.pitch)
-        }
-    }
-
-    val velocity = handler<PlayerVelocityStrafe> { event ->
+    val strafeHandler = handler<PlayerVelocityStrafe> { event ->
         if (activeConfigurable?.fixVelocity == true) {
             event.velocity = fixVelocity(event.velocity, event.movementInput, event.speed)
         }
+    }
+
+    val renderHandler = handler<GameRenderEvent> {
+        update()
+    }
+
+    val tickHandler = handler<GameTickEvent> {
+        // Update reset ticks
+        if (ticksUntilReset > 0) {
+            ticksUntilReset--
+        }
+    }
+
+    /**
+     * Modify server-side rotations
+     */
+    val packetHandler = handler<PacketEvent> { event ->
+        val packet = event.packet
+
+        if (packet !is PlayerMoveC2SPacket || !packet.changesLook()) {
+            return@handler
+        }
+
+        if (!deactivateManipulation) {
+            currentRotation?.fixedSensitivity()?.let {
+                packet.yaw = it.yaw
+                packet.pitch = it.pitch
+            }
+        }
+
+        // Update current rotation
+        serverRotation = Rotation(packet.yaw, packet.pitch)
     }
 
     /**
