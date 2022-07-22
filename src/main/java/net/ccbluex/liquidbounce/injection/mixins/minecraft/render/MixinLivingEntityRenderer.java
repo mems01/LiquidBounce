@@ -48,6 +48,7 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
         Rotation serverRotation = RotationManager.INSTANCE.getServerRotation();
 
         if (livingEntity != MinecraftClient.getInstance().player) {
+            this.currentRotation.set(null);
             return;
         }
 
@@ -73,10 +74,8 @@ public class MixinLivingEntityRenderer<T extends LivingEntity> {
     @Redirect(method = "render(Lnet/minecraft/entity/LivingEntity;FFLnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/MathHelper;lerpAngleDegrees(FFF)F", ordinal = 0))
     private float injectRotationsA(float g, float f, float s) {
         Rotation rot = currentRotation.get();
-        ModuleFreeCam module = ModuleFreeCam.INSTANCE;
         if (rot != null) {
-            float bodyYaw = module.shouldDisableRotations() ? module.getBodyYaw() : rot.getYaw();
-            return MathHelper.lerpAngleDegrees(g, bodyYaw, bodyYaw);
+            return MathHelper.lerpAngleDegrees(g, rot.getYaw(), rot.getYaw());
         } else {
             return MathHelper.lerpAngleDegrees(g, f, s);
         }
