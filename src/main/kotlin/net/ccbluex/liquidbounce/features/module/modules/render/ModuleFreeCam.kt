@@ -19,10 +19,7 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.render
 
-import net.ccbluex.liquidbounce.event.PlayerJumpEvent
-import net.ccbluex.liquidbounce.event.PlayerMoveEvent
-import net.ccbluex.liquidbounce.event.PlayerTickEvent
-import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.entity.directionYaw
@@ -32,6 +29,7 @@ import net.ccbluex.liquidbounce.utils.math.minus
 import net.ccbluex.liquidbounce.utils.math.plus
 import net.minecraft.entity.Entity
 import net.minecraft.entity.LivingEntity
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.math.Direction
 import net.minecraft.util.math.Vec3d
 import net.minecraft.util.math.Vec3i
@@ -47,16 +45,28 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
     private val speed by float("Speed", 1f, 0.1f..2f)
     private val freeze by boolean("Freeze", false)
     private val interactFromCamera by boolean("InteractFromCamera", false)
+    private val renderCrosshair by boolean("RenderCrosshair", false)
+    private val renderHand by boolean("RenderHand", true)
+    private val disableRotations by boolean("DisableRotations", true)
 
     private var pos = Vec3d.ZERO
     private var lastPos = Vec3d.ZERO
 
+    private var updateBodyYaw = false
+    var bodyYaw = 0f
+
     override fun enable() {
         updatePosition(player.eyePos, lastPosBeforePos = false, increase = false)
+        bodyYaw = player.bodyYaw
     }
 
     val tickHandler = handler<PlayerTickEvent> {
-        if (player.age < 5) {
+        if (updateBodyYaw) {
+            bodyYaw = player.bodyYaw
+            updateBodyYaw = false
+        }
+
+        if (player.age < 3) {
             updatePosition(player.eyePos, lastPosBeforePos = false, increase = false)
         }
 
@@ -80,6 +90,10 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
         it.movement.x = 0.0
         it.movement.y = 0.0
         it.movement.z = 0.0
+    }
+
+    val packetHandler = handler<PacketEvent> {
+        updateBodyYaw = it.packet is PlayerMoveC2SPacket && it.packet.changesLook()
     }
 
     fun applyPosition(entity: Entity, tickDelta: Float) {
@@ -120,6 +134,12 @@ object ModuleFreeCam : Module("FreeCam", Category.RENDER) {
 
         return interpolateCustomPosition(tickDelta, lastPos, pos)
     }
+
+    fun shouldRenderCrosshairInThirdPerson(original: Boolean) = original || enabled && renderCrosshair
+
+    fun shouldDisableHandRender() = enabled && !renderHand
+
+    fun shouldDisableRotations() = enabled && disableRotations
 
     private fun updatePosition(newPos: Vec3d, lastPosBeforePos: Boolean, increase: Boolean) {
         if (lastPosBeforePos) {

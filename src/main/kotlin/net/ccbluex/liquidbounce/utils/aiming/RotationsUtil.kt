@@ -291,11 +291,12 @@ object RotationManager : Listenable {
         }
     }
 
-    fun needsUpdate(): Boolean {
+    fun needsUpdate(lastYaw: Float, lastPitch: Float): Boolean {
         // Check if something changed
         val currentRotation = currentRotation?.fixedSensitivity() ?: return false
+        val lastRotation = Rotation(lastYaw, lastPitch)
 
-        return rotationDifference(currentRotation) != 0.0
+        return rotationDifference(currentRotation, lastRotation) != 0.0
     }
 
     /**

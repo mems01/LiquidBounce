@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.features.module.modules.fun.ModuleDerp;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoSlow;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModulePerfectHorseJump;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleStep;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
@@ -160,8 +161,9 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
      */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
-        updatedSilent = RotationManager.INSTANCE.needsUpdate();
-        return (bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent;
+        boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
+        updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
+        return !shouldDisableRotations && ((bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent);
     }
 
     /**
