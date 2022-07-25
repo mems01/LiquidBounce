@@ -34,7 +34,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerListEntry.class)
 public abstract class MixinPlayerListEntry {
 
-    @Shadow @Final private GameProfile profile;
+    @Shadow
+    @Final
+    private GameProfile profile;
     private boolean cosmeticTexturesLoaded = false;
 
     private Identifier capeTexture = null;
@@ -42,7 +44,7 @@ public abstract class MixinPlayerListEntry {
 
     @Inject(method = "loadTextures", at = @At("RETURN"))
     private void injectTextureLoading(CallbackInfo callbackInfo) {
-        synchronized(this) {
+        synchronized (this) {
             if (!this.cosmeticTexturesLoaded) {
                 this.cosmeticTexturesLoaded = true;
 

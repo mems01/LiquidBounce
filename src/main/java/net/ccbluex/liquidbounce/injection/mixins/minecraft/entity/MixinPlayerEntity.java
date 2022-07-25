@@ -120,7 +120,7 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
         ClientPlayerEntity player = MinecraftClient.getInstance().player;
         this.noClip = player != null && player.noClip;
     }
-  
+
     @Inject(method = "jump", at = @At("HEAD"), cancellable = true)
     private void hookJumpEvent(CallbackInfo ci) {
         if ((Object) this != MinecraftClient.getInstance().player) {

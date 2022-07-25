@@ -33,15 +33,17 @@ import javax.annotation.Nullable;
 @Mixin(Screen.class)
 public abstract class MixinScreen {
 
-    @Shadow @Nullable
+    @Shadow
+    @Nullable
     protected MinecraftClient client;
 
-    @Shadow public abstract void sendMessage(String message);
+    @Shadow
+    public abstract void sendMessage(String message);
 
     /**
      * Handle user chat messages
      *
-     * @param message chat message by client user
+     * @param message      chat message by client user
      * @param callbackInfo callback
      */
     @Inject(method = "sendMessage(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
