@@ -197,4 +197,9 @@ public abstract class MixinMinecraftClient {
         }
     }
 
+    @Inject(method = "render", at = @At("HEAD"))
+    private void hookClientRenderEvent(boolean tick, CallbackInfo ci) {
+        EventManager.INSTANCE.callEvent(new ClientRenderEvent());
+    }
+
 }

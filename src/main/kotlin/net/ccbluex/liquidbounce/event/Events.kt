@@ -86,6 +86,9 @@ class KeyboardKeyEvent(val window: Long, val keyCode: Int, val scancode: Int, va
 @Nameable("keyboardChar")
 class KeyboardCharEvent(val window: Long, val codepoint: Int) : Event()
 
+@Nameable("clientRender")
+class ClientRenderEvent : Event()
+
 // Input events
 
 @Nameable("inputHandle")

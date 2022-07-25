@@ -27,7 +27,6 @@ import net.ccbluex.liquidbounce.features.module.modules.movement.ModulePerfectHo
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleStep;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
-import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
 import net.minecraft.client.gui.screen.Screen;
@@ -49,18 +48,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
 
     @Shadow
-    public float lastYaw;
-
-    @Shadow
-    public float lastPitch;
-
-    @Shadow
     public Input input;
 
     @Shadow
     @Final
     public ClientPlayNetworkHandler networkHandler;
-    private boolean updatedSilent;
 
     /**
      * Hook entity tick event
@@ -162,40 +154,8 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
         boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
-        updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
+        boolean updatedSilent = RotationManager.INSTANCE.needsUpdate();
         return !shouldDisableRotations && ((bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent);
-    }
-
-    /**
-     * Hook silent rotations
-     */
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
-    private void hookLastSilentRotations(CallbackInfo ci) {
-        if (updatedSilent) {
-            updatedSilent = false;
-
-            Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
-            if (currRotation == null) {
-                return;
-            }
-
-            currRotation = currRotation.fixedSensitivity();
-            if (currRotation == null) {
-                return;
-            }
-
-            this.lastYaw = currRotation.getYaw();
-            this.lastPitch = currRotation.getPitch();
-        }
-    }
-
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastOnGround:Z", ordinal = 1, shift = At.Shift.BEFORE))
-    private void hookSilentRotationsUpdate(CallbackInfo ci) {
-        if (RotationManager.INSTANCE.getCurrentRotation() == null) {
-            return;
-        }
-
-        RotationManager.INSTANCE.update();
     }
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
