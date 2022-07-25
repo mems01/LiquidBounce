@@ -20,17 +20,18 @@
 package net.ccbluex.liquidbounce.utils.aiming
 
 import net.ccbluex.liquidbounce.config.Configurable
-import net.ccbluex.liquidbounce.event.Listenable
-import net.ccbluex.liquidbounce.event.PacketEvent
-import net.ccbluex.liquidbounce.event.PlayerVelocityStrafe
-import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.ccbluex.liquidbounce.utils.entity.rotation
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
 import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
-import net.minecraft.util.math.*
-import org.apache.commons.lang3.RandomUtils
+import net.minecraft.util.math.BlockPos
+import net.minecraft.util.math.Box
+import net.minecraft.util.math.MathHelper
+import net.minecraft.util.math.Vec3d
+import java.util.*
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sqrt
@@ -39,8 +40,13 @@ import kotlin.math.sqrt
  * Configurable to configure the dynamic rotation engine
  */
 class RotationsConfigurable : Configurable("Rotations") {
-    val turnSpeed by curve("TurnSpeed", arrayOf(4f, 7f, 10f, 3f, 2f, 0.7f))
+    val turnSpeed by floatRange("TurnSpeed", 180f..180f, 1f..180f)
     val fixVelocity by boolean("FixVelocity", true)
+    val strict by boolean("Strict", false)
+    val horizontalPatternSpeed by float("HorizontalPatternSpeed", 0.01283f, 0.0f..0.09f)
+    val verticalPatternSpeed by float("VerticalPatternSpeed", 0.038f, 0.0f..0.09f)
+    val movingChance by float("MovingChance", 0.31f, 0f..1f)
+    val standingChance by float("StandingChance", 0.91f, 0f..1f)
 }
 
 /**
@@ -61,9 +67,7 @@ object RotationManager : Listenable {
     // useful for something like autopot
     var deactivateManipulation = false
 
-    fun raytraceBlock(
-        eyes: Vec3d, pos: BlockPos, state: BlockState, range: Double, wallsRange: Double
-    ): VecRotation? {
+    fun raytraceBlock(eyes: Vec3d, pos: BlockPos, state: BlockState, range: Double, wallsRange: Double): VecRotation? {
         val offset = Vec3d(pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
         val shape = state.getOutlineShape(mc.world, pos, ShapeContext.of(mc.player))
 
@@ -83,7 +87,7 @@ object RotationManager : Listenable {
         range: Double,
         wallsRange: Double,
         expectedTarget: BlockPos? = null,
-        pattern: Pattern = GaussianPattern
+        pattern: Pattern = GaussianPattern,
     ): VecRotation? {
         val preferredSpot = pattern.spot(box)
         val preferredRotation = makeRotation(preferredSpot, eyes)
@@ -94,9 +98,9 @@ object RotationManager : Listenable {
         var visibleRot: VecRotation? = null
         var notVisibleRot: VecRotation? = null
 
-        for (x in 0.1..0.9 step 0.1) {
-            for (y in 0.1..0.9 step 0.1) {
-                for (z in 0.1..0.9 step 0.1) {
+        for (x in 0.0..1.0 step 0.1) {
+            for (y in 0.0..1.0 step 0.1) {
+                for (z in 0.0..1.0 step 0.1) {
                     val vec3 = Vec3d(
                         box.minX + (box.maxX - box.minX) * x,
                         box.minY + (box.maxY - box.minY) * y,
@@ -148,98 +152,6 @@ object RotationManager : Listenable {
         return visibleRot ?: notVisibleRot
     }
 
-    /**
-     * Find the best spot of the upper side of the block
-     */
-    fun canSeeBlockTop(
-        eyes: Vec3d, pos: BlockPos, range: Double, wallsRange: Double
-    ): Boolean {
-        val rangeSquared = range * range
-        val wallsRangeSquared = wallsRange * wallsRange
-
-        val minX = pos.x.toDouble()
-        val y = pos.y + 0.9
-        val minZ = pos.z.toDouble()
-
-        for (x in 0.1..0.9 step 0.4) {
-            for (z in 0.1..0.9 step 0.4) {
-                val vec3 = Vec3d(
-                    minX + x, y, minZ + z
-                )
-
-                // skip because of out of range
-                val distance = eyes.squaredDistanceTo(vec3)
-
-                if (distance > rangeSquared) {
-                    continue
-                }
-
-                // check if target is visible to eyes
-                val visible = facingBlock(eyes, vec3, pos, Direction.UP)
-
-                // skip because not visible in range
-                if (!visible && distance > wallsRangeSquared) {
-                    continue
-                }
-
-                return true
-            }
-
-        }
-
-        return false
-    }
-
-//    /**
-//     * Find the best spot of the upper side of the block
-//     */
-//    fun canSeeBlockTop(
-//        eyes: Vec3d,
-//        pos: BlockPos,
-//        range: Double,
-//        wallsRange: Double
-//    ): VecRotation? {
-//        val rangeSquared = range * range
-//        val wallsRangeSquared = wallsRange * wallsRange
-//
-//        var visibleRot: VecRotation? = null
-//        val notVisibleRot: VecRotation? = null
-//
-//        val minX = pos.x.toDouble()
-//        val y = pos.y.toDouble()
-//        val minZ = pos.z.toDouble()
-//
-//        for (x in 0.1..0.9 step 0.1) {
-//            for (z in 0.1..0.9 step 0.1) {
-//                val vec3 = Vec3d(
-//                    minX + x,
-//                    y,
-//                    minZ + z
-//                )
-//
-//                // skip because of out of range
-//                val distance = eyes.squaredDistanceTo(vec3)
-//
-//                if (distance > rangeSquared) {
-//                    continue
-//                }
-//
-//                // check if target is visible to eyes
-//                val visible = facingBlock(eyes, vec3, pos)
-//
-//                // skip because not visible in range
-//                if (!visible && distance > wallsRangeSquared) {
-//                    continue
-//                }
-//
-//                visibleRot = VecRotation(makeRotation(vec3, eyes), vec3)
-//            }
-//
-//        }
-//
-//        return visibleRot ?: notVisibleRot
-//    }
-
     fun aimAt(vec: Vec3d, eyes: Vec3d, ticks: Int = 5, configurable: RotationsConfigurable) =
         aimAt(makeRotation(vec, eyes), ticks, configurable)
 
@@ -247,8 +159,6 @@ object RotationManager : Listenable {
         activeConfigurable = configurable
         targetRotation = rotation
         ticksUntilReset = ticks
-
-        update()
     }
 
     fun makeRotation(vec: Vec3d, eyes: Vec3d): Rotation {
@@ -266,52 +176,45 @@ object RotationManager : Listenable {
      * Update current rotation to new rotation step
      */
     fun update() {
-        // Update reset ticks
-        if (ticksUntilReset > 0) {
-            ticksUntilReset--
-        }
-
         // Update patterns
         for (pattern in AIMING_PATTERNS) {
             pattern.update()
         }
 
         // Update rotations
-        val turnSpeed = RandomUtils.nextFloat(60f, 80f) // todo: use config
+        val speed = this.activeConfigurable?.turnSpeed ?: return
+        val turnSpeed = speed.start + (speed.endInclusive - speed.start) * Random().nextFloat()
 
-        val playerRotation = Rotation(mc.player!!.yaw, mc.player!!.pitch)
+        val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
-            val threshold = 2f // todo: might use turn speed
-
-            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) < threshold) {
+            if (rotationDifference(currentRotation ?: return, playerRotation) <= turnSpeed) {
                 ticksUntilReset = -1
 
                 targetRotation = null
                 currentRotation = null
                 return
             }
-
-            currentRotation = limitAngleChange(currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
-        } else if (targetRotation != null) {
-            targetRotation?.let { targetRotation ->
-                currentRotation = limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed)
-            }
+            currentRotation = limitAngleChange(currentRotation ?: return, playerRotation, turnSpeed)
+            return
+        }
+        targetRotation?.let { targetRotation ->
+            currentRotation = limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed)
         }
     }
 
-    fun needsUpdate(lastYaw: Float, lastPitch: Float): Boolean {
+    fun needsUpdate(): Boolean {
         // Check if something changed
-        val (currYaw, currPitch) = currentRotation?.fixedSensitivity() ?: return false
+        val currentRotation = currentRotation?.fixedSensitivity() ?: return false
 
-        return lastYaw != currYaw || lastPitch != currPitch
+        return rotationDifference(currentRotation) != 0.0
     }
 
     /**
      * Calculate difference between the server rotation and your rotation
      */
     fun rotationDifference(rotation: Rotation): Double {
-        return rotationDifference(rotation, serverRotation ?: Rotation(0f, 0f))
+        return rotationDifference(rotation, serverRotation ?: return 0.0)
     }
 
     /**
@@ -328,8 +231,8 @@ object RotationManager : Listenable {
         val pitchDifference = angleDifference(targetRotation.pitch, currentRotation.pitch)
 
         return Rotation(
-            currentRotation.yaw + if (yawDifference > turnSpeed) turnSpeed else yawDifference.coerceAtLeast(-turnSpeed),
-            currentRotation.pitch + if (pitchDifference > turnSpeed) turnSpeed else pitchDifference.coerceAtLeast(-turnSpeed)
+            currentRotation.yaw + yawDifference.coerceIn(-turnSpeed, turnSpeed),
+            currentRotation.pitch + pitchDifference.coerceIn(-turnSpeed, turnSpeed)
         )
     }
 
@@ -341,33 +244,47 @@ object RotationManager : Listenable {
     /**
      * Modify server-side rotations
      */
-    private val packetHandler = handler<PacketEvent> { event ->
-        val packet = event.packet
 
-        if (packet is PlayerMoveC2SPacket) {
-            if (!deactivateManipulation) {
-                currentRotation?.fixedSensitivity()?.let {
-                    val (serverYaw, serverPitch) = serverRotation ?: Rotation(0f, 0f)
-
-                    if (it.yaw != serverYaw || it.pitch != serverPitch) {
-                        packet.yaw = it.yaw
-                        packet.pitch = it.pitch
-                        packet.changeLook = true
-                    }
-                }
-            }
-
-            // Update current rotation
-            if (packet.changeLook) {
-                serverRotation = Rotation(packet.yaw, packet.pitch)
-            }
-        }
-    }
-
-    val velocity = handler<PlayerVelocityStrafe> { event ->
+    val strafeHandler = handler<PlayerVelocityStrafe> { event ->
         if (activeConfigurable?.fixVelocity == true) {
             event.velocity = fixVelocity(event.velocity, event.movementInput, event.speed)
         }
+    }
+
+    val rotationUpdateHandler = handler<ClientRenderEvent> {
+        if (targetRotation == null) {
+            return@handler
+        }
+
+        update()
+    }
+
+    val tickHandler = handler<GameTickEvent> {
+        // Update reset ticks
+        if (ticksUntilReset > 0) {
+            ticksUntilReset--
+        }
+    }
+
+    /**
+     * Modify server-side rotations
+     */
+    val packetHandler = handler<PacketEvent> { event ->
+        val packet = event.packet
+
+        if (packet !is PlayerMoveC2SPacket || !packet.changesLook()) {
+            return@handler
+        }
+
+        if (!deactivateManipulation) {
+            currentRotation?.fixedSensitivity()?.let {
+                packet.yaw = it.yaw
+                packet.pitch = it.pitch
+            }
+        }
+
+        // Update current rotation
+        serverRotation = Rotation(packet.yaw, packet.pitch)
     }
 
     /**

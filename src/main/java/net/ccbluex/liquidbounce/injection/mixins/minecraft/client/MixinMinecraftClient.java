@@ -161,8 +161,7 @@ public abstract class MixinMinecraftClient {
     private void hookScreen(Screen screen, CallbackInfo callbackInfo) {
         final ScreenEvent event = new ScreenEvent(screen);
         EventManager.INSTANCE.callEvent(event);
-        if (event.isCancelled())
-            callbackInfo.cancel();
+        if (event.isCancelled()) callbackInfo.cancel();
     }
 
     /**
@@ -196,6 +195,11 @@ public abstract class MixinMinecraftClient {
         if (RenderingFlags.isCurrentlyRenderingEntityOutline().get()) {
             cir.setReturnValue(true);
         }
+    }
+
+    @Inject(method = "render", at = @At("HEAD"))
+    private void hookClientRenderEvent(boolean tick, CallbackInfo ci) {
+        EventManager.INSTANCE.callEvent(new ClientRenderEvent());
     }
 
 }

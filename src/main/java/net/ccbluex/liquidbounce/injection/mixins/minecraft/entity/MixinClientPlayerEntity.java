@@ -24,8 +24,8 @@ import net.ccbluex.liquidbounce.features.module.modules.exploit.ModulePortalMenu
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoSlow;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModulePerfectHorseJump;
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleStep;
+import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
-import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
 import net.minecraft.client.gui.screen.Screen;
@@ -47,12 +47,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
 
     @Shadow
-    public float lastYaw;
-
-    @Shadow
-    public float lastPitch;
-
-    @Shadow
     public Input input;
 
     @Shadow
@@ -62,7 +56,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook entity tick event
      */
-    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V", shift = At.Shift.AFTER))
+    @Inject(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/AbstractClientPlayerEntity;tick()V", shift = At.Shift.BEFORE))
     private void hookTickEvent(CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new PlayerTickEvent());
     }
@@ -84,9 +78,9 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     }
 
     /**
-     * Hook entity movement tick event at RETURN and call out POST tick movement event
+     * Hook entity movement tick event at TAIL and call out POST tick movement event
      */
-    @Inject(method = "sendMovementPackets", at = @At("RETURN"))
+    @Inject(method = "sendMovementPackets", at = @At("TAIL"))
     private void hookMovementPost(CallbackInfo callbackInfo) {
         EventManager.INSTANCE.callEvent(new PlayerNetworkMovementTickEvent(EventState.POST));
     }
@@ -95,10 +89,12 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
      * Hook push out function tick at HEAD and call out push out event, which is able to stop the cancel the execution.
      */
     @Inject(method = "pushOutOfBlocks", at = @At("HEAD"), cancellable = true)
-    private void hookPushOut(CallbackInfo callbackInfo) {
+    private void hookPushOut(double x, double z, CallbackInfo ci) {
         final PlayerPushOutEvent pushOutEvent = new PlayerPushOutEvent();
         EventManager.INSTANCE.callEvent(pushOutEvent);
-        if (pushOutEvent.isCancelled()) callbackInfo.cancel();
+        if (pushOutEvent.isCancelled()) {
+            ci.cancel();
+        }
     }
 
     /**
@@ -123,7 +119,7 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     /**
      * Hook custom multiplier
      */
-    @Inject(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/client/input/Input;movementForward:F", shift = At.Shift.AFTER))
+    @Inject(method = "tickMovement", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;isUsingItem()Z", ordinal = 0))
     private void hookCustomMultiplier(CallbackInfo callbackInfo) {
         final Input input = this.input;
         // reverse
@@ -137,6 +133,8 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         input.movementSideways *= playerUseMultiplier.getSideways();
     }
 
+    // Silent rotations (Rotation Manager)
+
     /**
      * Hook sprint affect from NoSlow module
      */
@@ -149,49 +147,14 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         return playerEntity.isUsingItem();
     }
 
-    // Silent rotations (Rotation Manager)
-
-    private boolean updatedSilent;
-
     /**
      * Hook silent rotations
      */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
-        updatedSilent = RotationManager.INSTANCE.needsUpdate(lastYaw, lastPitch);
-        return (bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent;
-    }
-
-    /**
-     * Hook silent rotations
-     */
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
-    private void hookLastSilentRotations(CallbackInfo ci) {
-        if (updatedSilent) {
-            updatedSilent = false;
-
-            Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
-            if (currRotation == null) {
-                return;
-            }
-
-            currRotation = currRotation.fixedSensitivity();
-            if (currRotation == null) {
-                return;
-            }
-
-            this.lastYaw = currRotation.getYaw();
-            this.lastPitch = currRotation.getPitch();
-        }
-    }
-
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastOnGround:Z", ordinal = 1, shift = At.Shift.BEFORE))
-    private void hookSilentRotationsUpdate(CallbackInfo ci) {
-        if (RotationManager.INSTANCE.getCurrentRotation() == null) {
-            return;
-        }
-
-        RotationManager.INSTANCE.update();
+        boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
+        boolean updatedSilent = RotationManager.INSTANCE.needsUpdate();
+        return !shouldDisableRotations && ((bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent);
     }
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
@@ -227,4 +190,5 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
             callbackInfoReturnable.setReturnValue(1f);
         }
     }
+
 }

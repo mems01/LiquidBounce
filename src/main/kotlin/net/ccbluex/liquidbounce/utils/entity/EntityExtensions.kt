@@ -18,8 +18,12 @@
  */
 package net.ccbluex.liquidbounce.utils.entity
 
+import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleNoJumpDelay
 import net.ccbluex.liquidbounce.render.engine.Vec3
+import net.ccbluex.liquidbounce.utils.aiming.Rotation
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.ccbluex.liquidbounce.utils.client.mc
+import net.minecraft.client.input.Input
 import net.minecraft.client.network.ClientPlayerEntity
 import net.minecraft.entity.Entity
 import net.minecraft.entity.player.PlayerEntity
@@ -32,6 +36,9 @@ import kotlin.math.sqrt
 
 val ClientPlayerEntity.moving
     get() = input.movementForward != 0.0f || input.movementSideways != 0.0f
+
+val ClientPlayerEntity.pressingMovementButton
+    get() = input.pressingForward || input.pressingBack || input.pressingLeft || input.pressingRight
 
 val Entity.exactPosition
     get() = Triple(x, y, z)
@@ -104,8 +111,30 @@ fun Vec3d.strafe(yaw: Float, speed: Double = sqrtSpeed) {
     z = cos(angle) * speed
 }
 
+fun Vec3d.strafe(yaw: Float, speed: Double = sqrtSpeed, keyboardCheck: Boolean = false) {
+    val player = mc.player ?: return
+
+    if (keyboardCheck && !player.pressingMovementButton) {
+        x = 0.0
+        z = 0.0
+        return
+    }
+
+    this.strafe(yaw, speed)
+}
+
 val ClientPlayerEntity.eyesPos: Vec3d
     get() = Vec3d(pos.x, boundingBox.minY + getEyeHeight(pose), pos.z)
+
+val ClientPlayerEntity.rotation: Rotation
+    get() = Rotation(yaw, pitch)
+
+val Input.yAxisMovement: Float
+    get() = when {
+        jumping -> 1.0f
+        sneaking -> -1.0f
+        else -> 0.0f
+    }
 
 /**
  * Allows to calculate the distance between the current entity and [entity] from the nearest corner of the bounding box
@@ -143,11 +172,7 @@ fun getNearestPoint(eyes: Vec3d, box: Box): Vec3d {
 
     // It loops through every coordinate of the double arrays and picks the nearest point
     for (i in 0..2) {
-        if (origin[i] > destMaxs[i]) {
-            origin[i] = destMaxs[i]
-        } else if (origin[i] < destMins[i]) {
-            origin[i] = destMins[i]
-        }
+        origin[i] = origin[i].coerceIn(destMins[i], destMaxs[i])
     }
 
     return Vec3d(origin[0], origin[1], origin[2])
@@ -160,10 +185,14 @@ fun PlayerEntity.wouldBlockHit(source: PlayerEntity): Boolean {
 
     val vec3d = source.pos
 
-    val facingVec = getRotationVec(1.0f)
+    val facingVec = this.getRotationVec(1.0f)
     var deltaPos = vec3d.relativize(pos).normalize()
 
     deltaPos = Vec3d(deltaPos.x, 0.0, deltaPos.z)
+
+    if (ModuleNoJumpDelay.enabled) {
+        chat(deltaPos.dotProduct(facingVec).toString())
+    }
 
     return deltaPos.dotProduct(facingVec) < 0.0
 }
