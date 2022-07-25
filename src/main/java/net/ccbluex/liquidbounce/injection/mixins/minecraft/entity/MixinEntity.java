@@ -71,6 +71,9 @@ public abstract class MixinEntity {
     @Shadow
     public abstract float getYaw();
 
+    @Shadow
+    public boolean noClip;
+
     /**
      * Hook entity margin modification event
      */
