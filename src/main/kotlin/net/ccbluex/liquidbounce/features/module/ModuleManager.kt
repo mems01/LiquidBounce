@@ -169,11 +169,12 @@ object ModuleManager : Listenable, Iterable<Module> by modules {
             ModuleAirJump,
             ModuleProjectilePuncher,
             ModuleAutoPot,
-            ModuleTrueSight,
             ModuleKeepChatAfterDeath,
             ModuleOverrideTime,
             ModuleXRay,
-            ModuleNoRotateSet
+            ModuleAntiBot,
+            ModuleNoRotateSet,
+            ModuleTrueSight
         )
 
         builtin.apply {
