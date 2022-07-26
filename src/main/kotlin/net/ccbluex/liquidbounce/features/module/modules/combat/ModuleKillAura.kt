@@ -108,45 +108,6 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         targetTracker.cleanup()
     }
 
-//    val renderHandler = handler<EngineRenderEvent> {
-//        val currentTarget = targetTracker.lockedOnTarget ?: return@handler
-//
-//        val bb = currentTarget.boundingBox
-//
-//        val renderTask = ColoredPrimitiveRenderTask(6 * 10 * 10 * 2, PrimitiveType.Lines)
-//
-//        for (direction in Direction.values()) {
-//            val maxRaysOnAxis = 10 - 1
-//            val stepFactor = 1.0 / maxRaysOnAxis;
-//
-//            val face = bb.getFace(direction)
-//
-//            val outerPoints = face.getAllPoints(Vec3d.of(direction.vector))
-//
-//            var idx = 0
-//
-//            for (outerPoint in outerPoints) {
-//                val vex = Vec3(outerPoint) - Vec3(
-//                    0.0, 0.0, 1.0
-//                )
-//                val color = Color4b(Color.getHSBColor(idx / 4.0f, 1.0f, 1.0f))
-//
-//                renderTask.index(renderTask.vertex(vex, Color4b.WHITE))
-//                renderTask.index(renderTask.vertex(vex + Vec3(direction.vector), color))
-//
-//                idx++
-//            }
-//
-//            //            for (x in (0..maxRaysOnAxis)) {
-//            //                for (y in (0..maxRaysOnAxis)) {
-//            //                    renderTask.index(renderTask.vertex(Vec3(plane.getPoint(x * stepFactor, y * stepFactor)) - Vec3(0.0, 0.0, 1.0), Color4b.WHITE))
-//            //                }
-//            //            }
-//        }
-//
-//        RenderEngine.enqueueForRendering(RenderEngine.CAMERA_VIEW_LAYER, renderTask)
-//    }
-
     val repeatable = repeatable {
         // Killaura in spectator-mode is pretty useless, trust me.
         if (player.isSpectator) {

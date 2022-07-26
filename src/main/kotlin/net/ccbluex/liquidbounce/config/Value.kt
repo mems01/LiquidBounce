@@ -47,7 +47,7 @@ open class Value<T : Any>(
     @SerializedName("name") open val name: String,
     @SerializedName("value") internal var value: T,
     @Exclude val valueType: ValueType,
-    @Exclude val listType: ListValueType = ListValueType.None
+    @Exclude val listType: ListValueType = ListValueType.None,
 ) {
 
     @Exclude
@@ -155,7 +155,7 @@ class RangedValue<T : Any>(
     name: String,
     value: T,
     @Exclude val range: ClosedRange<*>,
-    type: ValueType
+    type: ValueType,
 ) : Value<T>(name, value, valueType = type) {
 
     fun getFrom(): Double {
@@ -201,7 +201,7 @@ class RangedValue<T : Any>(
 class ChooseListValue<T : NamedChoice>(
     name: String,
     value: T,
-    @Exclude val choices: Array<T>
+    @Exclude val choices: Array<T>,
 ) : Value<T>(name, value, ValueType.CHOOSE) {
 
     override fun deserializeFrom(gson: Gson, element: JsonElement) {
@@ -219,7 +219,7 @@ class ChooseListValue<T : NamedChoice>(
     }
 
     override fun setByString(string: String) {
-        set(this.choices.firstOrNull { it.choiceName.equals(string, true) }!! as T)
+        set(this.choices.firstOrNull { it.choiceName.equals(string, true) }!!)
     }
 }
 

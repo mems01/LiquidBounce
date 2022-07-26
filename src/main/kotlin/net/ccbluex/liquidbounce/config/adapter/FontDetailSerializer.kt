@@ -37,7 +37,7 @@ object FontDetailSerializer : JsonSerializer<Fonts.FontDetail>, JsonDeserializer
     override fun deserialize(
         json: JsonElement,
         typeOfT: Type?,
-        context: JsonDeserializationContext?
+        context: JsonDeserializationContext?,
     ): Fonts.FontDetail {
         val obj = json.asJsonObject
 

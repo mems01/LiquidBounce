@@ -98,7 +98,7 @@ object ModuleAutoGapple : Module("AutoGapple", Category.COMBAT) {
         button: Int,
         slotActionType: SlotActionType,
         inventoryConstraints: InventoryConstraintsConfigurable,
-        close: Boolean = true
+        close: Boolean = true,
     ) {
         val slot = convertClientSlotToServerSlot(item)
         val isInInventoryScreen = mc.currentScreen is InventoryScreen

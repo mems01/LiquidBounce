@@ -24,6 +24,6 @@ open class PositionColorVertexFormat : VertexFormat() {
     var color by color4b(AttributeType.Color)
 }
 
-class PositionColorUVVertexFormat() : PositionColorVertexFormat() {
+class PositionColorUVVertexFormat : PositionColorVertexFormat() {
     var texturePosition by uv(AttributeType.Texture)
 }

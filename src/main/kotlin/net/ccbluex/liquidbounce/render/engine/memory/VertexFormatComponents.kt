@@ -26,7 +26,7 @@ class VertexFormatComponent(
     val offset: Int,
     val count: Int,
     val normalized: Boolean,
-    val attribInfo: AttributeInfo
+    val attribInfo: AttributeInfo,
 ) {
 
     val length: Int

@@ -87,7 +87,7 @@ data class Glyph(
     val glyphBounds: BoundingBox2f,
     val useHorizontalBaseline: Boolean,
     val advanceX: Float,
-    val advanceY: Float
+    val advanceY: Float,
 )
 
 class GlyphPage(val texture: Texture, val glyphs: Map<Char, Glyph>, val height: Float, val ascent: Float) {
@@ -142,7 +142,7 @@ class GlyphPage(val texture: Texture, val glyphs: Map<Char, Glyph>, val height: 
 
             // The suggested width of the atlas, determined by a simple heuristic, capped by the maximal texture size
             val suggestedAtlasWidth = min(
-                (sqrt(glyphsToRender.sumByDouble { it.glyphMetrics.bounds2D.width * it.glyphMetrics.bounds2D.height } * 1.2) * 1.125).toInt(),
+                (sqrt(glyphsToRender.sumOf { it.glyphMetrics.bounds2D.width * it.glyphMetrics.bounds2D.height } * 1.2) * 1.125).toInt(),
                 maxTextureSize
             )
 

@@ -154,20 +154,20 @@ class FallingPlayer(
                 i
             )
             if (rayTrace(start.add(w, 0.0, w / 2f), end).also {
-                raytracedBlock = it
-            } != null
+                    raytracedBlock = it
+                } != null
             ) return CollisionResult(raytracedBlock, i)
             if (rayTrace(start.add(-w, 0.0, w / 2f), end).also {
-                raytracedBlock = it
-            } != null
+                    raytracedBlock = it
+                } != null
             ) return CollisionResult(raytracedBlock, i)
             if (rayTrace(start.add(w / 2f, 0.0, w), end).also {
-                raytracedBlock = it
-            } != null
+                    raytracedBlock = it
+                } != null
             ) return CollisionResult(raytracedBlock, i)
             if (rayTrace(start.add(w / 2f, 0.0, -w), end).also {
-                raytracedBlock = it
-            } != null
+                    raytracedBlock = it
+                } != null
             ) return CollisionResult(raytracedBlock, i)
         }
         return null

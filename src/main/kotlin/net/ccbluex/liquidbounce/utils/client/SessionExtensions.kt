@@ -38,7 +38,7 @@ enum class GenEnvironments(
     private val authHost: String,
     private val accountsHost: String,
     private val sessionHost: String,
-    private val servicesHost: String
+    private val servicesHost: String,
 ) : Environment {
 
     THE_ALTENING(
@@ -64,7 +64,11 @@ enum class GenEnvironments(
 
 }
 
-private fun MinecraftSessionService.login(username: String, password: String = "", environment: Environment): LoginResult {
+private fun MinecraftSessionService.login(
+    username: String,
+    password: String = "",
+    environment: Environment,
+): LoginResult {
     if (password.isBlank()) {
         return loginCracked(username)
     }
@@ -108,8 +112,10 @@ fun MinecraftSessionService.loginAltening(account: String) =
     login(account, LiquidBounce.CLIENT_NAME, GenEnvironments.THE_ALTENING)
 
 fun MinecraftSessionService.loginCracked(username: String): LoginResult {
-    mc.session = Session(username, MojangApi.getUUID(username), "-", Optional.empty(), Optional.empty(),
-        Session.AccountType.LEGACY)
+    mc.session = Session(
+        username, MojangApi.getUUID(username), "-", Optional.empty(), Optional.empty(),
+        Session.AccountType.LEGACY
+    )
     EventManager.callEvent(SessionEvent())
     return LoginResult.LOGGED_IN
 }

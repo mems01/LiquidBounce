@@ -28,7 +28,16 @@ import net.ccbluex.liquidbounce.render.shaders.ShaderHandler
 import net.ccbluex.liquidbounce.utils.math.Mat4
 import org.lwjgl.opengl.*
 
-class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal val type: PrimitiveType, val shaderHandler: ShaderHandler<T>, private val indexBuffer: IndexBuffer? = null, private val perInstance: VertexFormat? = null, private val texture: Texture? = null, private val state: GlRenderState = GlRenderState(), private val shaderData: T? = null) : RenderTask() {
+class VertexFormatRenderTask<T>(
+    private val vertexFormat: VertexFormat,
+    internal val type: PrimitiveType,
+    val shaderHandler: ShaderHandler<T>,
+    private val indexBuffer: IndexBuffer? = null,
+    private val perInstance: VertexFormat? = null,
+    private val texture: Texture? = null,
+    private val state: GlRenderState = GlRenderState(),
+    private val shaderData: T? = null,
+) : RenderTask() {
     var arrayBuffer: VertexBufferObject? = null
     var perInstanceBuffer: VertexBufferObject? = null
     var elementBuffer: VertexBufferObject? = null
@@ -72,9 +81,24 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
 
                 this.vertexFormat.components.forEach {
                     when (it.attribInfo.attributeType) {
-                        AttributeType.Position -> GL11.glVertexPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        AttributeType.Color -> GL11.glColorPointer(it.count, it.type.openGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        AttributeType.Texture -> GL11.glTexCoordPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
+                        AttributeType.Position -> GL11.glVertexPointer(
+                            it.count,
+                            it.type.legacyOpenGlEnum,
+                            this.vertexFormat.length,
+                            it.offset.toLong()
+                        )
+                        AttributeType.Color -> GL11.glColorPointer(
+                            it.count,
+                            it.type.openGlEnum,
+                            this.vertexFormat.length,
+                            it.offset.toLong()
+                        )
+                        AttributeType.Texture -> GL11.glTexCoordPointer(
+                            it.count,
+                            it.type.legacyOpenGlEnum,
+                            this.vertexFormat.length,
+                            it.offset.toLong()
+                        )
                         else -> throw IllegalStateException()
                     }
                 }
@@ -113,7 +137,12 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
             }
         } else {
             if (this.perInstance != null) {
-                GL31.glDrawArraysInstanced(this.type.mode, 0, this.vertexFormat.elementCount, this.perInstance.elementCount)
+                GL31.glDrawArraysInstanced(
+                    this.type.mode,
+                    0,
+                    this.vertexFormat.elementCount,
+                    this.perInstance.elementCount
+                )
             } else {
                 GL20.glDrawArrays(this.type.mode, 0, this.vertexFormat.elementCount)
             }
@@ -150,7 +179,10 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
             val vao = if (perInstanceBuffer == null) {
                 VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false))
             } else {
-                VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false), VertexAttribute(this.perInstance!!, perInstanceBuffer, true))
+                VertexAttributeObject(
+                    VertexAttribute(this.vertexFormat, arrayBuffer, false),
+                    VertexAttribute(this.perInstance!!, perInstanceBuffer, true)
+                )
             }
 
             vao.bind()

@@ -59,7 +59,10 @@ object UltralightJsClient {
     object UltralightJsProxyManager {
 
         fun setProxy(host: String, port: Int, username: String, password: String): String {
-            ProxyManager.currentProxy = ProxyManager.Proxy(InetSocketAddress(host, port), if (username.isNotBlank()) ProxyManager.ProxyCredentials(username, password) else null)
+            ProxyManager.currentProxy = ProxyManager.Proxy(
+                InetSocketAddress(host, port),
+                if (username.isNotBlank()) ProxyManager.ProxyCredentials(username, password) else null
+            )
 
             return "Successfully set proxy"
         }

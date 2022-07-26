@@ -60,7 +60,7 @@ open class ChoiceConfigurable(
     @Exclude val module: Module,
     name: String,
     var activeChoice: Choice,
-    choicesCallback: (ChoiceConfigurable) -> Array<Choice>
+    choicesCallback: (ChoiceConfigurable) -> Array<Choice>,
 ) : Configurable(name, valueType = ValueType.CHOICE) {
 
     val choices: Array<Choice>
@@ -127,12 +127,12 @@ abstract class Choice(name: String) : Configurable(name), Listenable, NamedChoic
     /**
      * Called when module is turned on
      */
-    open fun enable() { }
+    open fun enable() {}
 
     /**
      * Called when module is turned off
      */
-    open fun disable() { }
+    open fun disable() {}
 
     /**
      * Events should be handled when mode is enabled

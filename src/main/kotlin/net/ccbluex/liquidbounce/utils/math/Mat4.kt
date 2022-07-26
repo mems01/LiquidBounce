@@ -256,7 +256,7 @@ $a30 $a31 $a32 $a33
             right: Float,
             bottom: Float,
             nearPlane: Float,
-            farPlane: Float
+            farPlane: Float,
         ): Mat4 {
             val mat4 = Mat4()
             mat4.a00 = 2.0f / (right - left)

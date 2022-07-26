@@ -32,7 +32,7 @@ import net.ccbluex.liquidbounce.render.shaders.InstancedColoredPrimitiveShader
 fun espBoxInstancedRenderTask(
     instanceBuffer: PositionColorVertexFormat,
     vertexFormat: VertexFormat,
-    indexBuffer: IndexBuffer
+    indexBuffer: IndexBuffer,
 ) = VertexFormatRenderTask(
     vertexFormat,
     PrimitiveType.Triangles,
@@ -43,7 +43,7 @@ fun espBoxInstancedRenderTask(
 )
 
 fun espBoxRenderTask(
-    pair: Pair<VertexFormat, IndexBuffer>
+    pair: Pair<VertexFormat, IndexBuffer>,
 ) = VertexFormatRenderTask(
     pair.first,
     PrimitiveType.Triangles,
@@ -55,7 +55,7 @@ fun espBoxRenderTask(
 fun espBoxInstancedOutlineRenderTask(
     instanceBuffer: PositionColorVertexFormat,
     vertexFormat: VertexFormat,
-    indexBuffer: IndexBuffer
+    indexBuffer: IndexBuffer,
 ) = VertexFormatRenderTask(
     vertexFormat,
     PrimitiveType.Lines,

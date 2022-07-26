@@ -24,7 +24,7 @@ import net.ccbluex.liquidbounce.render.engine.UV2s
 import net.ccbluex.liquidbounce.render.engine.Vec3
 import kotlin.reflect.KProperty
 
-abstract class VertexFormat() {
+abstract class VertexFormat {
 
     /**
      * How many vertices are in this buffer?
@@ -43,19 +43,37 @@ abstract class VertexFormat() {
     val components = mutableListOf<VertexFormatComponent>()
 
     fun vec3(attributeType: AttributeType): DelegatedVertexFormatComponent<Vec3> {
-        val component = VertexFormatComponent(VertexFormatComponentDataType.GlFloat, this.length, 3, false, AttributeInfo(attributeType))
+        val component = VertexFormatComponent(
+            VertexFormatComponentDataType.GlFloat,
+            this.length,
+            3,
+            false,
+            AttributeInfo(attributeType)
+        )
 
         return DelegatedVertexFormatComponent(this, registerComponent(component))
     }
 
     fun uv(attributeType: AttributeType): DelegatedVertexFormatComponent<UV2s> {
-        val component = VertexFormatComponent(VertexFormatComponentDataType.GlUnsignedShort, length, 2, true, AttributeInfo(attributeType))
+        val component = VertexFormatComponent(
+            VertexFormatComponentDataType.GlUnsignedShort,
+            length,
+            2,
+            true,
+            AttributeInfo(attributeType)
+        )
 
         return DelegatedVertexFormatComponent(this, registerComponent(component))
     }
 
     fun color4b(attributeType: AttributeType): DelegatedVertexFormatComponent<Color4b> {
-        val component = VertexFormatComponent(VertexFormatComponentDataType.GlUnsignedByte, this.length, 4, true, AttributeInfo(attributeType))
+        val component = VertexFormatComponent(
+            VertexFormatComponentDataType.GlUnsignedByte,
+            this.length,
+            4,
+            true,
+            AttributeInfo(attributeType)
+        )
 
         return DelegatedVertexFormatComponent(this, registerComponent(component))
     }
@@ -85,7 +103,10 @@ inline fun <T : VertexFormat> T.putVertex(function: T.() -> Unit): Int {
     return this.elementCount - 1
 }
 
-class DelegatedVertexFormatComponent<T>(val vertexFormat: VertexFormat, val vertexFormatComponent: VertexFormatComponent) {
+class DelegatedVertexFormatComponent<T>(
+    val vertexFormat: VertexFormat,
+    val vertexFormatComponent: VertexFormatComponent,
+) {
 
     operator fun getValue(thisRef: Any?, property: KProperty<*>): T {
         throw IllegalStateException("This property shall not be read from!")

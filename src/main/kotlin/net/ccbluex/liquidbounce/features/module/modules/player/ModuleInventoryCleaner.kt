@@ -145,12 +145,12 @@ object ModuleInventoryCleaner : Module("InventoryCleaner", Category.PLAYER) {
                     val hotbarSlotToFill = hotbarSlotsToFill[currentStackCount]
 
                     if ((
-                        isGreedy || hotbarSlotToFill.first.satisfactionCheck?.invoke(
-                                inventory.getStack(
+                                isGreedy || hotbarSlotToFill.first.satisfactionCheck?.invoke(
+                                    inventory.getStack(
                                         hotbarSlotToFill.second
                                     )
-                            ) != true
-                        ) && weightedItem.slot != hotbarSlotToFill.second
+                                ) != true
+                                ) && weightedItem.slot != hotbarSlotToFill.second
                     ) {
                         if (executeAction(weightedItem.slot, hotbarSlotToFill.second, SlotActionType.SWAP)) {
                             wait(inventoryConstraints.delay.random())
@@ -280,7 +280,7 @@ object ModuleInventoryCleaner : Module("InventoryCleaner", Category.PLAYER) {
     private fun categoriteItem(
         items: MutableList<WeightedItem>,
         stack: ItemStack,
-        slotId: Int
+        slotId: Int,
     ) {
         if (stack.isNothing()) {
             return
@@ -399,17 +399,17 @@ class WeightedSwordItem(itemStack: ItemStack, slot: Int) : WeightedItem(itemStac
         private val COMPARATOR = ComparatorChain<WeightedSwordItem>(
             { o1, o2 ->
                 (
-                    // TODO: Attack Speed
-                    o1.itemStack.item.attackDamage * (1.0f + DAMAGE_ESTIMATOR.estimateValue(o1.itemStack)) + o1.itemStack.getEnchantment(
-                        Enchantments.FIRE_ASPECT
-                    ) * 4.0f * 0.625f * 0.9f
-                    ).compareTo(
-                    o2.itemStack.item.attackDamage * (
-                        1.0f + DAMAGE_ESTIMATOR.estimateValue(
-                            o2.itemStack
-                        ) + o2.itemStack.getEnchantment(Enchantments.FIRE_ASPECT) * 4.0f * 0.625f * 0.9f
-                        )
-                )
+                        // TODO: Attack Speed
+                        o1.itemStack.item.attackDamage * (1.0f + DAMAGE_ESTIMATOR.estimateValue(o1.itemStack)) + o1.itemStack.getEnchantment(
+                            Enchantments.FIRE_ASPECT
+                        ) * 4.0f * 0.625f * 0.9f
+                        ).compareTo(
+                        o2.itemStack.item.attackDamage * (
+                                1.0f + DAMAGE_ESTIMATOR.estimateValue(
+                                    o2.itemStack
+                                ) + o2.itemStack.getEnchantment(Enchantments.FIRE_ASPECT) * 4.0f * 0.625f * 0.9f
+                                )
+                    )
             },
             { o1, o2 ->
                 SECONDARY_VALUE_ESTIMATOR.estimateValue(o1.itemStack)
@@ -653,7 +653,7 @@ enum class ItemType(val allowOnlyOne: Boolean) {
 enum class ItemSortChoice(
     override val choiceName: String,
     val category: ItemCategory?,
-    val satisfactionCheck: ((ItemStack) -> Boolean)? = null
+    val satisfactionCheck: ((ItemStack) -> Boolean)? = null,
 ) : NamedChoice {
     SWORD("Sword", ItemCategory(ItemType.SWORD, 0)),
     BOW("Bow", ItemCategory(ItemType.BOW, 0)),

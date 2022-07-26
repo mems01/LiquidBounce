@@ -84,11 +84,11 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
         },
         Comparator.comparingDouble {
             (
-                1.5 - (it.item as BlockItem).block.defaultState.getHardness(
-                    world,
-                    BlockPos(0, 0, 0)
-                )
-                ).absoluteValue
+                    1.5 - (it.item as BlockItem).block.defaultState.getHardness(
+                        world,
+                        BlockPos(0, 0, 0)
+                    )
+                    ).absoluteValue
         },
         { o1, o2 -> o2.count.compareTo(o1.count) }
     )

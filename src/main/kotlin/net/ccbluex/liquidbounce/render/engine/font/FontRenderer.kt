@@ -38,7 +38,7 @@ data class RenderedGlyph(
     val x2: Float,
     val y2: Float,
     val z: Float,
-    val color: Color4b
+    val color: Color4b,
 )
 
 data class RenderedLine(val p1: Vec3, val p2: Vec3, val color: Color4b)
@@ -61,7 +61,7 @@ class FontRenderer(
      * [Font.BOLD] | [Font.ITALIC] -> 3 (Can be null)
      */
     private val glyphPages: Array<GlyphPage?>,
-    override val size: Float
+    override val size: Float,
 ) : AbstractFontRenderer() {
 
     /**
@@ -154,7 +154,7 @@ class FontRenderer(
         defaultColor: Color4b,
         shadow: Boolean,
         z: Float,
-        scale: Float
+        scale: Float,
     ): Float {
         var len = 0.0f
         // Create a common seed for rendering random fonts
@@ -183,7 +183,7 @@ class FontRenderer(
         shadow: Boolean,
         obfuscatedSeed: Long,
         z: Float,
-        scale: Float
+        scale: Float,
     ): Float {
         if (text.isEmpty()) {
             return x0
@@ -324,7 +324,7 @@ class FontRenderer(
 
     override fun getStringWidth(
         text: String,
-        shadow: Boolean
+        shadow: Boolean,
     ): Float {
         if (text.isEmpty()) {
             return 0.0f
@@ -396,7 +396,7 @@ class FontRenderer(
         y: Float,
         z: Float,
         color: Color4b,
-        through: Boolean
+        through: Boolean,
     ) {
         if (through) {
             this.cache.lines.add(
@@ -458,7 +458,16 @@ class FontRenderer(
                 )
             }
 
-            tasks.add(VertexFormatRenderTask(vertexFormat, PrimitiveType.Triangles, TexturedPrimitiveShader, indexBuffer = indexBuffer, texture = glyphPages[style]!!.texture, state = GlRenderState(texture2d = true, depthTest = false)))
+            tasks.add(
+                VertexFormatRenderTask(
+                    vertexFormat,
+                    PrimitiveType.Triangles,
+                    TexturedPrimitiveShader,
+                    indexBuffer = indexBuffer,
+                    texture = glyphPages[style]!!.texture,
+                    state = GlRenderState(texture2d = true, depthTest = false)
+                )
+            )
         }
 
         if (this.cache.lines.isNotEmpty()) {
