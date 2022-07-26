@@ -188,14 +188,14 @@ object RotationManager : Listenable {
         val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
-            if (rotationDifference(currentRotation ?: return, playerRotation) <= turnSpeed) {
+            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= turnSpeed) {
                 ticksUntilReset = -1
 
                 targetRotation = null
                 currentRotation = null
                 return
             }
-            currentRotation = limitAngleChange(currentRotation ?: return, playerRotation, turnSpeed)
+            currentRotation = limitAngleChange(currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
             return
         }
         targetRotation?.let { targetRotation ->

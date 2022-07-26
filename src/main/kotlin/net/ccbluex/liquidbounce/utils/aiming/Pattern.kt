@@ -57,24 +57,18 @@ object GaussianPattern : Pattern {
     private var spot = gaussianVec
     private var nextSpot = gaussianVec
 
-    private const val STANDING_CHANCE: Double = 0.91
-    private const val MOVING_CHANCE: Double = 0.32
-
-    private const val SPEED_HORIZONTAL_LIMITER: Double = 0.04
-    private const val SPEED_VERTICAL_LIMITER: Double = 0.0787
-
     private val randomGaussian: Double
         get() = abs(random.nextGaussian() % 1.0)
 
     private val gaussianVec: Vec3d
-        get() = Vec3d(randomGaussian, 1 - randomGaussian, randomGaussian)
+        get() = Vec3d(1 - randomGaussian, 1 - randomGaussian, 1 - randomGaussian)
 
     override fun update() {
         // Chance of generating new spot
         val newSpotChance = if (mc.player?.moving == false) {
-            STANDING_CHANCE
+            RotationManager.activeConfigurable?.standingChance?.toDouble() ?: 0.0
         } else {
-            MOVING_CHANCE
+            RotationManager.activeConfigurable?.movingChance?.toDouble() ?: 0.0
         }
 
         if (random.nextDouble() > newSpotChance) {
@@ -83,9 +77,11 @@ object GaussianPattern : Pattern {
 
         // Check if spot has to be moved
         if (spot != nextSpot) {
-            val xSpeed = randomGaussian * SPEED_HORIZONTAL_LIMITER
-            val ySpeed = randomGaussian * SPEED_VERTICAL_LIMITER
-            val zSpeed = randomGaussian * SPEED_HORIZONTAL_LIMITER
+            val xSpeed =
+                randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
+            val ySpeed = randomGaussian * (RotationManager.activeConfigurable?.verticalPatternSpeed?.toDouble() ?: 0.0)
+            val zSpeed =
+                randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
 
             val diffX = (nextSpot.x - spot.x)
             spot.x += diffX.coerceIn(-xSpeed, xSpeed)
@@ -98,10 +94,12 @@ object GaussianPattern : Pattern {
         }
     }
 
-    override fun spot(box: Box) = Vec3d(
-        box.minX + ((box.maxX - box.minX) * spot.x),
-        box.minY + ((box.maxY - box.minY) * spot.y),
-        box.minZ + ((box.maxZ - box.minZ) * spot.z)
-    )
+    override fun spot(box: Box): Vec3d {
+        return Vec3d(
+            box.minX + (box.maxX - box.minX) * spot.x,
+            box.minY + (box.maxY - box.minY) * spot.y,
+            box.minZ + (box.maxZ - box.minZ) * spot.z
+        )
+    }
 
 }
