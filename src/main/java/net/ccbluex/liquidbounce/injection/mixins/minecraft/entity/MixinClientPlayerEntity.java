@@ -26,6 +26,7 @@ import net.ccbluex.liquidbounce.features.module.modules.movement.ModulePerfectHo
 import net.ccbluex.liquidbounce.features.module.modules.movement.ModuleStep;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleFreeCam;
 import net.ccbluex.liquidbounce.features.module.modules.render.ModuleNoSwing;
+import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.TickStateManager;
 import net.minecraft.client.gui.screen.Screen;
@@ -52,6 +53,12 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     @Shadow
     @Final
     public ClientPlayNetworkHandler networkHandler;
+
+    @Shadow
+    public float lastYaw;
+
+    @Shadow
+    public float lastPitch;
 
     /**
      * Hook entity tick event
@@ -147,14 +154,32 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         return playerEntity.isUsingItem();
     }
 
+    boolean updatedSilent;
+
+
     /**
      * Hook silent rotations
      */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
         boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
-        boolean updatedSilent = RotationManager.INSTANCE.needsUpdate();
+        updatedSilent = RotationManager.INSTANCE.needsUpdate();
         return !shouldDisableRotations && ((bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent);
+    }
+
+    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
+    private void hookLastSilentRotations(CallbackInfo ci) {
+        if (updatedSilent) {
+            updatedSilent = false;
+
+            Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
+            if (currRotation == null) {
+                return;
+            }
+
+            this.lastYaw = currRotation.getYaw();
+            this.lastPitch = currRotation.getPitch();
+        }
     }
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)

@@ -195,17 +195,20 @@ object RotationManager : Listenable {
                 currentRotation = null
                 return
             }
-            currentRotation = limitAngleChange(currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed)
+            currentRotation = limitAngleChange(
+                currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed
+            ).fixedSensitivity()
             return
         }
         targetRotation?.let { targetRotation ->
-            currentRotation = limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed)
+            currentRotation =
+                limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed).fixedSensitivity()
         }
     }
 
     fun needsUpdate(): Boolean {
         // Check if something changed
-        val currentRotation = currentRotation?.fixedSensitivity() ?: return false
+        val currentRotation = currentRotation ?: return false
 
         return rotationDifference(currentRotation) != 0.0
     }
@@ -277,7 +280,7 @@ object RotationManager : Listenable {
         }
 
         if (!deactivateManipulation) {
-            currentRotation?.fixedSensitivity()?.let {
+            currentRotation?.let {
                 packet.yaw = it.yaw
                 packet.pitch = it.pitch
             }
@@ -291,7 +294,7 @@ object RotationManager : Listenable {
      * Fix velocity
      */
     private fun fixVelocity(currVelocity: Vec3d, movementInput: Vec3d, speed: Float): Vec3d {
-        currentRotation?.fixedSensitivity()?.let { rotation ->
+        currentRotation?.let { rotation ->
             val yaw = rotation.yaw
             val d = movementInput.lengthSquared()
 

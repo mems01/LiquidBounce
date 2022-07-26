@@ -109,11 +109,6 @@ public abstract class MixinLivingEntity extends MixinEntity {
             return instance.add(x, y, z);
         }
 
-        currentRotation = currentRotation.fixedSensitivity();
-        if (currentRotation == null) {
-            return instance.add(x, y, z);
-        }
-
         float yaw = currentRotation.getYaw() * 0.017453292F;
 
         return instance.add(-MathHelper.sin(yaw) * 0.2F, 0.0, MathHelper.cos(yaw) * 0.2F);
