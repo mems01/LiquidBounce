@@ -175,7 +175,8 @@ object ModuleManager : Listenable, Iterable<Module> by modules {
             ModuleAntiBot,
             ModuleNoRotateSet,
             ModuleTrueSight,
-            ModuleCameraClip
+            ModuleCameraClip,
+            ModuleTest
         )
 
         builtin.apply {

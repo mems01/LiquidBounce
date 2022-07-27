@@ -21,6 +21,7 @@ package net.ccbluex.liquidbounce.utils.aiming
 
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.moving
+import net.ccbluex.liquidbounce.utils.entity.yAxisMovement
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.Vec3d
 import java.util.*
@@ -64,11 +65,14 @@ object GaussianPattern : Pattern {
         get() = Vec3d(1 - randomGaussian, 1 - randomGaussian, 1 - randomGaussian)
 
     override fun update() {
+        val player = mc.player ?: return
+        val configurable = RotationManager.activeConfigurable ?: return
+
         // Chance of generating new spot
-        val newSpotChance = if (mc.player?.moving == false) {
-            RotationManager.activeConfigurable?.standingChance?.toDouble() ?: 0.0
+        val newSpotChance = if (!player.moving && player.input.yAxisMovement == 0f) {
+            configurable.standingChance
         } else {
-            RotationManager.activeConfigurable?.movingChance?.toDouble() ?: 0.0
+            configurable.movingChance
         }
 
         if (random.nextDouble() > newSpotChance) {
@@ -77,11 +81,9 @@ object GaussianPattern : Pattern {
 
         // Check if spot has to be moved
         if (spot != nextSpot) {
-            val xSpeed =
-                randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
-            val ySpeed = randomGaussian * (RotationManager.activeConfigurable?.verticalPatternSpeed?.toDouble() ?: 0.0)
-            val zSpeed =
-                randomGaussian * (RotationManager.activeConfigurable?.horizontalPatternSpeed?.toDouble() ?: 0.0)
+            val xSpeed = randomGaussian * configurable.horizontalPatternSpeed
+            val ySpeed = randomGaussian * configurable.verticalPatternSpeed
+            val zSpeed = randomGaussian * configurable.horizontalPatternSpeed
 
             val diffX = (nextSpot.x - spot.x)
             spot.x += diffX.coerceIn(-xSpeed, xSpeed)
