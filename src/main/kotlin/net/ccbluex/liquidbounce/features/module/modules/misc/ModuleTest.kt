@@ -1,7 +1,6 @@
 package net.ccbluex.liquidbounce.features.module.modules.misc
 
 import net.ccbluex.liquidbounce.event.PacketEvent
-import net.ccbluex.liquidbounce.event.TransferOrigin
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.utils.client.chat
@@ -11,7 +10,7 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
     val packetName by text("Name For Packet", "Any")
 
     val packetHandler = handler<PacketEvent> { event ->
-        if (event.origin != TransferOrigin.SEND || !packets) {
+        if (!packets) {
             return@handler
         }
 
