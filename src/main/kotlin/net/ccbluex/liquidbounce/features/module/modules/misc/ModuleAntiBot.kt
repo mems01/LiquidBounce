@@ -102,17 +102,14 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                     continue
                 }
 
-                var prevArmor: MutableIterable<ItemStack>? = null
+                var armor: MutableIterable<ItemStack>? = null
 
                 if (!isFullyArmored(entity)) {
-                    prevArmor = entity.armorItems
+                    armor = entity.armorItems
                     wait(1)
                 }
 
-                if ((isFullyArmored(entity) || updatesArmor(
-                        entity, prevArmor
-                    )) && entity.gameProfile.properties.isEmpty
-                ) {
+                if ((isFullyArmored(entity) || updatesArmor(entity, armor)) && entity.gameProfile.properties.isEmpty) {
                     botList.add(entity.uuid)
                 }
 
@@ -210,7 +207,10 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         val deltaPing = pingSinceJoin - entry.latency
                         val deltaMS = System.currentTimeMillis() - suspectList.getValue(entry.profile.id).second
 
-                        // Intave instantly updates ping, but some servers might lag, so the difference limit is 10 MS. The less the value, the less possible false positives.
+                        /**
+                         * Intave instantly sends this packet, but some servers might lag, so it might be delayed, that's why the difference limit is 10 MS.
+                         * The less the value, the lower the chances of producing false positives, even though it's highly unlikely.
+                         */
                         if (deltaPing == pingSinceJoin && deltaMS <= 10) {
                             botList.add(entry.profile.id)
                         }
