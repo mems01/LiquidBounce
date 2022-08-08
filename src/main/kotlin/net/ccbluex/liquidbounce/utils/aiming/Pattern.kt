@@ -62,7 +62,7 @@ object GaussianPattern : Pattern {
         get() = abs(random.nextGaussian() % 1.0)
 
     private val gaussianVec: Vec3d
-        get() = Vec3d(1 - randomGaussian, 1 - randomGaussian, 1 - randomGaussian)
+        get() = Vec3d(randomGaussian, 1 - randomGaussian, randomGaussian)
 
     override fun update() {
         val player = mc.player ?: return
