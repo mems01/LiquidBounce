@@ -206,9 +206,9 @@ object RotationManager : Listenable {
         }
     }
 
-    fun needsUpdate(): Boolean {
+    fun needsUpdate(original: Boolean): Boolean {
         // Check if something changed
-        val currentRotation = currentRotation ?: return false
+        val currentRotation = currentRotation ?: return original
 
         return rotationDifference(currentRotation) != 0.0
     }

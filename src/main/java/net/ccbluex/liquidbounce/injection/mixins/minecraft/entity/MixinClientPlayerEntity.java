@@ -163,8 +163,8 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
         boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
-        updatedSilent = RotationManager.INSTANCE.needsUpdate();
-        return !shouldDisableRotations && ((bl4 && RotationManager.INSTANCE.getCurrentRotation() == null) || updatedSilent);
+        updatedSilent = RotationManager.INSTANCE.needsUpdate(bl4);
+        return !shouldDisableRotations && updatedSilent;
     }
 
     @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
