@@ -18,17 +18,18 @@
  */
 package net.ccbluex.liquidbounce.features.module.modules.world
 
-import net.ccbluex.liquidbounce.event.*
+import net.ccbluex.liquidbounce.event.EventState
+import net.ccbluex.liquidbounce.event.PlayerNetworkMovementTickEvent
+import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.repeatable
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.aiming.Rotation
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
 import net.ccbluex.liquidbounce.utils.aiming.RotationsConfigurable
 import net.ccbluex.liquidbounce.utils.aiming.raycast
-import net.ccbluex.liquidbounce.utils.block.canStandOn
 import net.ccbluex.liquidbounce.utils.block.getState
 import net.ccbluex.liquidbounce.utils.client.SilentHotbar
-import net.ccbluex.liquidbounce.utils.client.StateUpdateEvent
 import net.ccbluex.liquidbounce.utils.entity.eyesPos
 import net.ccbluex.liquidbounce.utils.extensions.getFace
 import net.ccbluex.liquidbounce.utils.sorting.ComparatorChain
@@ -57,46 +58,31 @@ import kotlin.math.absoluteValue
  */
 object ModuleScaffold : Module("Scaffold", Category.WORLD) {
 
-    private val BLOCK_COMPARATOR = ComparatorChain<ItemStack>(
-        { o1, o2 ->
-            compareByCondition(
-                o1,
-                o2
-            ) { (it.item as BlockItem).block.defaultState.material.isSolid }
-        },
-        { o1, o2 ->
-            compareByCondition(
-                o1,
-                o2
-            ) {
-                (it.item as BlockItem).block.defaultState.isFullCube(
-                    world,
-                    BlockPos(
-                        0,
-                        0,
-                        0
-                    )
+    private val BLOCK_COMPARATOR = ComparatorChain<ItemStack>({ o1, o2 ->
+        compareByCondition(
+            o1, o2
+        ) { (it.item as BlockItem).block.defaultState.material.isSolid }
+    }, { o1, o2 ->
+        compareByCondition(
+            o1, o2
+        ) {
+            (it.item as BlockItem).block.defaultState.isFullCube(
+                world, BlockPos(
+                    0, 0, 0
                 )
-            }
-        },
-        { o1, o2 ->
-            (o2.item as BlockItem).block.slipperiness.compareTo((o1.item as BlockItem).block.slipperiness)
-        },
-        Comparator.comparingDouble {
-            (
-                    1.5 - (it.item as BlockItem).block.defaultState.getHardness(
-                        world,
-                        BlockPos(0, 0, 0)
-                    )
-                    ).absoluteValue
-        },
-        { o1, o2 -> o2.count.compareTo(o1.count) }
-    )
+            )
+        }
+    }, { o1, o2 ->
+        (o2.item as BlockItem).block.slipperiness.compareTo((o1.item as BlockItem).block.slipperiness)
+    }, Comparator.comparingDouble {
+        (1.5 - (it.item as BlockItem).block.defaultState.getHardness(
+            world, BlockPos(0, 0, 0)
+        )).absoluteValue
+    }, { o1, o2 -> o2.count.compareTo(o1.count) })
 
     val silent by boolean("Silent", true)
     var delay by intRange("Delay", 3..5, 0..40)
 
-    val eagle by boolean("Eagle", true)
     val down by boolean("Down", false)
 
     // Rotation
@@ -124,7 +110,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
     val networkTickHandler = repeatable {
         val target = currentTarget ?: return@repeatable
 
-        val serverRotation = RotationManager.serverRotation ?: return@repeatable
+        val serverRotation = RotationManager.currentRotation ?: RotationManager.serverRotation ?: return@repeatable
         val rayTraceResult = raycast(4.5, serverRotation) ?: return@repeatable
 
         if (rayTraceResult.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != target.blockPos || rayTraceResult.side != target.direction || rayTraceResult.pos.y < target.minY || !isValidTarget(
@@ -159,10 +145,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
         }
 
         val result = interaction.interactBlock(
-            player,
-            world,
-            Hand.MAIN_HAND,
-            rayTraceResult
+            player, world, Hand.MAIN_HAND, rayTraceResult
         )
 
         if (result.isAccepted) {
@@ -171,7 +154,11 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
             }
 
             currentTarget = null
-            wait(delay.random())
+            delay.random().let {
+                if (it > 0) {
+                    wait(it)
+                }
+            }
         }
     }
 
@@ -191,17 +178,6 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
         }
 
         return true
-    }
-
-    val repeatable = handler<StateUpdateEvent> {
-        // Check if player is on the edge and is NOT flying
-        val isAir = !player.blockPos.add(0, -1, 0).canStandOn() && !player.abilities.flying
-
-        if (shouldDisableSafeWalk()) {
-            it.state.enforceEagle = false
-        } else if (isAir && eagle) {
-            it.state.enforceEagle = true
-        }
     }
 
     override fun disable() {
@@ -264,14 +240,8 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
 
             val first = if (!blockStateToInvestigate.isAir && blockStateToInvestigate.canReplace(
                     ItemPlacementContext(
-                        player,
-                        Hand.MAIN_HAND,
-                        player.inventory.getStack(SilentHotbar.serversideSlot),
-                        BlockHitResult(
-                            Vec3d.of(posToInvestigate),
-                            Direction.UP,
-                            posToInvestigate,
-                            false
+                        player, Hand.MAIN_HAND, player.inventory.getStack(SilentHotbar.serversideSlot), BlockHitResult(
+                            Vec3d.of(posToInvestigate), Direction.UP, posToInvestigate, false
                         )
                     )
                 )
@@ -289,12 +259,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
                 }.maxByOrNull { it.second }
             } else {
                 val directionsToInvestigate = arrayOf(
-                    Direction.UP,
-                    Direction.NORTH,
-                    Direction.EAST,
-                    Direction.SOUTH,
-                    Direction.WEST,
-                    Direction.DOWN
+                    Direction.UP, Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST, Direction.DOWN
                 )
 
                 directionsToInvestigate.mapNotNull { direction ->
@@ -327,9 +292,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
                 val truncate = currBlock is StairsBlock || currBlock is SlabBlock // TODO Find this out
 
                 val face = currState.getOutlineShape(
-                    mc.world,
-                    currPos,
-                    ShapeContext.of(player)
+                    mc.world, currPos, ShapeContext.of(player)
                 ).boundingBoxes.mapNotNull {
                     var face = it.getFace(first.first)
 
@@ -338,24 +301,19 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
                     }
 
                     Pair(
-                        face,
-                        Vec3d(
+                        face, Vec3d(
                             face.from.x + (face.to.x - face.from.x) * 0.5,
                             face.from.y + (face.to.y - face.from.y) * 0.5,
                             face.from.z + (face.to.z - face.from.z) * 0.5
                         )
                     )
-                }.maxWithOrNull(
-                    Comparator.comparingDouble<Pair<Face, Vec3d>> {
-                        it.second.subtract(
-                            Vec3d(
-                                0.5,
-                                0.5,
-                                0.5
-                            )
-                        ).multiply(Vec3d.of(first.first.vector)).lengthSquared()
-                    }.thenComparingDouble { it.second.y }
-                ) ?: continue
+                }.maxWithOrNull(Comparator.comparingDouble<Pair<Face, Vec3d>> {
+                    it.second.subtract(
+                        Vec3d(
+                            0.5, 0.5, 0.5
+                        )
+                    ).multiply(Vec3d.of(first.first.vector)).lengthSquared()
+                }.thenComparingDouble { it.second.y }) ?: continue
 
                 return Target(
                     currPos,
@@ -368,12 +326,6 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
 
         return null
     }
-
-    val safeWalkHandler = handler<PlayerSafeWalkEvent> { event ->
-        event.isSafeWalk = !shouldDisableSafeWalk()
-    }
-
-    private fun shouldDisableSafeWalk() = shouldGoDown && player.blockPos.add(0, -2, 0).canStandOn()
 
     data class Face(val from: Vec3d, val to: Vec3d) {
 
@@ -388,9 +340,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
 
         val center: Vec3d
             get() = Vec3d(
-                from.x + (to.x - from.x) * 0.5,
-                from.y + (to.y - from.y) * 0.5,
-                from.z + (to.z - from.z) * 0.5
+                from.x + (to.x - from.x) * 0.5, from.y + (to.y - from.y) * 0.5, from.z + (to.z - from.z) * 0.5
             )
 
         fun truncate(minY: Double): Face? {
