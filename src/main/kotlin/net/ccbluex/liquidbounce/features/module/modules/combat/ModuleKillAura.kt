@@ -19,9 +19,7 @@
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
 import net.ccbluex.liquidbounce.config.NamedChoice
-import net.ccbluex.liquidbounce.event.AttackEvent
-import net.ccbluex.liquidbounce.event.EventManager
-import net.ccbluex.liquidbounce.event.repeatable
+import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.features.module.modules.combat.ModuleKillAura.RaycastMode.*
@@ -108,12 +106,17 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         targetTracker.cleanup()
     }
 
-    val repeatable = repeatable {
+    val vlaro = handler<PlayerNetworkMovementTickEvent> {
         // Killaura in spectator-mode is pretty useless, trust me.
-        if (player.isSpectator) {
-            return@repeatable
+        if (it.state != EventState.PRE || player.isSpectator) {
+            return@handler
         }
 
+        // Update current target tracker to make sure you attack the best enemy
+        updateEnemySelection()
+    }
+
+    val repeatable = repeatable {
         // Make sure killaura-logic is not running while inventory is open
         val isInInventoryScreen = mc.currentScreen is InventoryScreen
 
@@ -123,13 +126,10 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             return@repeatable
         }
 
-        // Update current target tracker to make sure you attack the best enemy
-        updateEnemySelection()
-
         // Check if there is target to attack
         val target = targetTracker.lockedOnTarget ?: return@repeatable
         // Did you ever send a rotation before?
-        val rotation = RotationManager.serverRotation ?: return@repeatable
+        val rotation = RotationManager.currentRotation ?: RotationManager.serverRotation ?: return@repeatable
 
         if (target.boxedDistanceTo(player) <= range && facingEnemy(target, range.toDouble(), rotation)) {
             // Check if between enemy and player is another entity
