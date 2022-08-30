@@ -53,6 +53,7 @@ object ModuleChestStealer : Module("ChestStealer", Category.PLAYER) {
         if (screen !is GenericContainerScreen) {
             return@handler
         }
+
         if (checkTitle) {
             val titleString = screen.title.string
 
@@ -64,7 +65,7 @@ object ModuleChestStealer : Module("ChestStealer", Category.PLAYER) {
         val itemsToCollect = this.selectionMode.processor(ModuleInventoryCleaner.getUsefulItems(screen))
 
         for (slotId in itemsToCollect) {
-            mc.interactionManager!!.clickSlot(screen.screenHandler.syncId, slotId, 0, SlotActionType.QUICK_MOVE, player)
+            interaction.clickSlot(screen.screenHandler.syncId, slotId, 0, SlotActionType.QUICK_MOVE, player)
 
             this.lastSlot = slotId
 
@@ -84,22 +85,18 @@ object ModuleChestStealer : Module("ChestStealer", Category.PLAYER) {
     }
 
     enum class SelectionMode(override val choiceName: String, val processor: (List<Int>) -> List<Int>) : NamedChoice {
-        DISTANCE(
-            "Distance",
-            {
-                it.sortedBy { slot ->
-                    val rowA = slot / 9
-                    val colA = slot % 9
+        DISTANCE("Distance", {
+            it.sortedBy { slot ->
+                val rowA = slot / 9
+                val colA = slot % 9
 
-                    val rowB = lastSlot / 9
-                    val colB = lastSlot % 9
+                val rowB = lastSlot / 9
+                val colB = lastSlot % 9
 
-                    (colA - colB) * (colA - colB) + (rowA - rowB) * (rowA - rowB)
-                }
+                (colA - colB) * (colA - colB) + (rowA - rowB) * (rowA - rowB)
             }
-        ),
-        INDEX("Index", List<Int>::sorted),
-        RANDOM("Random", List<Int>::shuffled),
+        }),
+        INDEX("Index", List<Int>::sorted), RANDOM("Random", List<Int>::shuffled),
     }
 
 }

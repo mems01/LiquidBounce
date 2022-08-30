@@ -46,7 +46,6 @@ class TargetTracker(defaultPriority: PriorityEnum = PriorityEnum.HEALTH) : Confi
         val world = mc.world ?: return emptyList()
 
         val entities = world.entities.filter { it.shouldBeAttacked(enemyConf) }
-            .sortedBy { it.squaredBoxedDistanceTo(player) } // Sort by distance
 
         when (priority) {
             PriorityEnum.HEALTH -> entities.sortedBy { if (it is LivingEntity) it.health else 0f } // Sort by health
