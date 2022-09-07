@@ -24,6 +24,7 @@ import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.client.Chronometer
+import net.ccbluex.liquidbounce.utils.client.chat
 import net.minecraft.client.gui.screen.ingame.GenericContainerScreen
 import net.minecraft.screen.slot.SlotActionType
 import net.minecraft.text.TranslatableText
@@ -44,13 +45,18 @@ object ModuleChestStealer : Module("ChestStealer", Category.PLAYER) {
     private val timer = Chronometer()
 
     val repeatable = handler<GameRenderEvent> {
-        if (!timer.hasElapsed()) {
-            return@handler
-        }
-
         val screen = mc.currentScreen
 
         if (screen !is GenericContainerScreen) {
+            delay.random().let {
+                if (it > 0) {
+                    timer.waitFor(it.toLong())
+                }
+            }
+            return@handler
+        }
+
+        if (!timer.hasElapsed()) {
             return@handler
         }
 
@@ -69,14 +75,12 @@ object ModuleChestStealer : Module("ChestStealer", Category.PLAYER) {
 
             this.lastSlot = slotId
 
-            val time = delay.random()
-
-            if (time == 0) {
-                continue
+            delay.random().let {
+                if (it > 0) {
+                    timer.waitFor(it.toLong())
+                    return@handler
+                }
             }
-
-            timer.waitFor(time.toLong())
-            return@handler
         }
 
         if (itemsToCollect.isEmpty()) {

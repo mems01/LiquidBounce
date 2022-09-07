@@ -5,6 +5,7 @@ import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.utils.client.chat
 import net.minecraft.network.packet.c2s.play.PlayPongC2SPacket
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 
 object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Category.MISC) {
     val packets by boolean("Packets", false)
@@ -16,7 +17,7 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
         }
 
         if (packetName != "Any" && !event.packet.javaClass.simpleName.lowercase()
-                .contains(packetName.lowercase()) || event.packet is PlayPongC2SPacket
+                .contains(packetName.lowercase()) || event.packet !is PlayerMoveC2SPacket.Full || event.packet is PlayPongC2SPacket
         ) {
             return@handler
         }

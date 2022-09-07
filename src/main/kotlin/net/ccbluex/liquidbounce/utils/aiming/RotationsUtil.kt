@@ -23,6 +23,7 @@ import net.ccbluex.liquidbounce.config.Configurable
 import net.ccbluex.liquidbounce.event.*
 import net.ccbluex.liquidbounce.utils.client.mc
 import net.ccbluex.liquidbounce.utils.entity.rotation
+import net.ccbluex.liquidbounce.utils.kotlin.random
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
@@ -31,7 +32,6 @@ import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
 import net.minecraft.util.math.Vec3d
-import java.util.*
 import kotlin.math.atan2
 import kotlin.math.hypot
 import kotlin.math.sqrt
@@ -182,8 +182,7 @@ object RotationManager : Listenable {
         }
 
         // Update rotations
-        val speed = this.activeConfigurable?.turnSpeed ?: return
-        val turnSpeed = speed.start + (speed.endInclusive - speed.start) * Random().nextFloat()
+        val turnSpeed = this.activeConfigurable?.turnSpeed?.random() ?: return
 
         val playerRotation = mc.player?.rotation ?: return
 
