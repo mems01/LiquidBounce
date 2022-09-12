@@ -106,9 +106,57 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         targetTracker.cleanup()
     }
 
-    val vlaro = handler<PlayerNetworkMovementTickEvent> {
+//    val renderHandler = handler<EngineRenderEvent> {
+//        val currentTarget = targetTracker.lockedOnTarget ?: return@handler
+//
+//        val bb = currentTarget.boundingBox
+//
+//        val renderTask = ColoredPrimitiveRenderTask(6 * 10 * 10 * 2, PrimitiveType.Lines)
+//
+//        for (direction in Direction.values()) {
+//            val maxRaysOnAxis = 10 - 1
+//            val stepFactor = 1.0 / maxRaysOnAxis;
+//
+//            val face = bb.getFace(direction)
+//
+//            val outerPoints = face.getAllPoints(Vec3d.of(direction.vector))
+//
+//            var idx = 0
+//
+//            for (outerPoint in outerPoints) {
+//                val vex = Vec3(outerPoint) - Vec3(
+//                    0.0, 0.0, 1.0
+//                )
+//                val color = Color4b(Color.getHSBColor(idx / 4.0f, 1.0f, 1.0f))
+//
+//                renderTask.index(renderTask.vertex(vex, Color4b.WHITE))
+//                renderTask.index(renderTask.vertex(vex + Vec3(direction.vector), color))
+//
+//                idx++
+//            }
+//
+//            //            for (x in (0..maxRaysOnAxis)) {
+//            //                for (y in (0..maxRaysOnAxis)) {
+//            //                    renderTask.index(renderTask.vertex(Vec3(plane.getPoint(x * stepFactor, y * stepFactor)) - Vec3(0.0, 0.0, 1.0), Color4b.WHITE))
+//            //                }
+//            //            }
+//        }
+//
+//        RenderEngine.enqueueForRendering(RenderEngine.CAMERA_VIEW_LAYER, renderTask)
+//    }
+
+    val rotationUpdateHandler = handler<PlayerNetworkMovementTickEvent> {
         // Killaura in spectator-mode is pretty useless, trust me.
         if (it.state != EventState.PRE || player.isSpectator) {
+            return@handler
+        }
+
+        // Make sure killaura-logic is not running while inventory is open
+        val isInInventoryScreen = mc.currentScreen is InventoryScreen
+
+        if (isInInventoryScreen && !ignoreOpenInventory) {
+            // Cleanup current target tracker
+            targetTracker.cleanup()
             return@handler
         }
 
@@ -117,19 +165,12 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
     }
 
     val repeatable = repeatable {
-        // Make sure killaura-logic is not running while inventory is open
         val isInInventoryScreen = mc.currentScreen is InventoryScreen
-
-        if (isInInventoryScreen && !ignoreOpenInventory) {
-            // Cleanup current target tracker
-            targetTracker.cleanup()
-            return@repeatable
-        }
 
         // Check if there is target to attack
         val target = targetTracker.lockedOnTarget ?: return@repeatable
         // Did you ever send a rotation before?
-        val rotation = RotationManager.currentRotation ?: RotationManager.serverRotation ?: return@repeatable
+        val rotation = RotationManager.serverRotation ?: return@repeatable
 
         if (target.boxedDistanceTo(player) <= range && facingEnemy(target, range.toDouble(), rotation)) {
             // Check if between enemy and player is another entity

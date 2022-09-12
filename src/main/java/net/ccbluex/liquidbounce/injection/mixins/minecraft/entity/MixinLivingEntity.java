@@ -92,7 +92,7 @@ public abstract class MixinLivingEntity extends MixinEntity {
     /**
      * Hook velocity rotation modification
      * <p>
-     * Jump according to modified rotation. Prevents detection by movement sensitive anticheats such as AAC, Hawk, Intave, etc.
+     * Jump according to modified rotation. Prevents detection by movement sensitive anticheats such as AAC, Hawk, Intave, Grim, etc.
      */
     @Redirect(method = "jump", at = @At(value = "INVOKE", target = "Lnet/minecraft/util/math/Vec3d;add(DDD)Lnet/minecraft/util/math/Vec3d;"))
     private Vec3d hookFixRotation(Vec3d instance, double x, double y, double z) {
