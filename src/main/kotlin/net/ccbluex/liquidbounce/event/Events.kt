@@ -198,7 +198,7 @@ class ClientShutdownEvent : Event()
 class ValueChangedEvent(val value: Value<*>) : Event()
 
 @Nameable("toggleModule")
-class ToggleModuleEvent(val module: Module, val newState: Boolean) : Event()
+class ToggleModuleEvent(val module: Module, val newState: Boolean, val ignoreCondition: Boolean = false) : Event()
 
 @Nameable("notification")
 class NotificationEvent(val title: String, val message: String, val severity: Severity) : Event() {

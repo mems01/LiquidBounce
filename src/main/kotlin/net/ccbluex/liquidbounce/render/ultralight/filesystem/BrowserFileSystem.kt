@@ -95,7 +95,7 @@ class BrowserFileSystem : UltralightFileSystem {
         }
         return try {
             // Retrieve the mime type and log it
-            val mimeType = Files.probeContentType(realPath)
+            val mimeType = Files.probeContentType(realPath) ?: return null
             log(false, "Mime type of %s is %s", path, mimeType)
             mimeType
         } catch (e: IOException) {
