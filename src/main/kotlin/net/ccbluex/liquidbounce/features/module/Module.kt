@@ -80,7 +80,7 @@ open class Module(
                 NotificationEvent.Severity.INFO
             )
 
-            val notInGame = (mc.player == null || mc.player == null) && new
+            val notInGame = (mc.player == null || mc.world == null) && new
 
             // Call out module event
             EventManager.callEvent(ToggleModuleEvent(this, new, notInGame))
