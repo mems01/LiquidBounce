@@ -57,6 +57,15 @@ public abstract class MixinWorldRenderer {
         }
     }
 
+    @Inject(method = "render", at = @At("HEAD"))
+    private void injectOutlineRender(MatrixStack matrices, float tickDelta, long limitTime, boolean renderBlockOutline, Camera camera, GameRenderer gameRenderer, LightmapTextureManager lightmapTextureManager, Matrix4f positionMatrix, CallbackInfo ci) {
+        try {
+            OutlineShader.INSTANCE.begin(ModuleESP.OutlineMode.INSTANCE.getWidth());
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
+    }
+
     @Inject(method = "renderEntity", at = @At("HEAD"))
     private void injectOutlineESP(Entity entity, double cameraX, double cameraY, double cameraZ, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, CallbackInfo info) {
         // Prevent stack overflow
@@ -70,8 +79,8 @@ public abstract class MixinWorldRenderer {
 
             this.entityOutlinesFramebuffer = outlineShader.getFramebuffer();
 
-            outlineShader.begin(ModuleESP.OutlineMode.INSTANCE.getWidth(), color != null ? color : ModuleESP.INSTANCE.getBaseColor());
-            outlineShader.setDirty();
+            outlineShader.setColor(color != null ? color : ModuleESP.INSTANCE.getBaseColor());
+            OutlineShader.INSTANCE.setDirty();
 
             RenderingFlags.isCurrentlyRenderingEntityOutline().set(true);
 
