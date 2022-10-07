@@ -185,11 +185,6 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         return rotation.getPitch();
     }
 
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastOnGround:Z", ordinal = 1))
-    private void hookUpdateServerRotation(CallbackInfo ci) {
-        RotationManager.INSTANCE.setServerRotation(new Rotation(this.lastYaw, this.lastPitch));
-    }
-
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
     private void injectForcedState(CallbackInfoReturnable<Boolean> cir) {
         Boolean enforceEagle = TickStateManager.INSTANCE.getEnforcedState().getEnforceEagle();

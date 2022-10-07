@@ -27,6 +27,7 @@ import net.ccbluex.liquidbounce.utils.kotlin.random
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
+import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
@@ -259,6 +260,26 @@ object RotationManager : Listenable {
         // Update reset ticks
         if (ticksUntilReset > 0) {
             ticksUntilReset--
+        }
+    }
+
+    /**
+     * Update server rotations
+     */
+    val packetHandler = handler<PacketEvent> { event ->
+        val packet = event.packet
+
+        if (packet !is PlayerMoveC2SPacket || !packet.changesLook()) {
+            return@handler
+        }
+
+        serverRotation = Rotation(packet.yaw, packet.pitch)
+
+        // serverRotation must always match currentRotation post update
+        currentRotation?.let {
+            if (rotationDifference(it) != 0.0) {
+                serverRotation = it
+            }
         }
     }
 
