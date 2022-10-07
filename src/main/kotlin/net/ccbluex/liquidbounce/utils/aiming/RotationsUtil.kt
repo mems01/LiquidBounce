@@ -27,7 +27,6 @@ import net.ccbluex.liquidbounce.utils.kotlin.random
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
@@ -205,12 +204,7 @@ object RotationManager : Listenable {
         }
     }
 
-    fun needsUpdate(original: Boolean): Boolean {
-        // Check if something changed
-        val currentRotation = currentRotation ?: return original
-
-        return rotationDifference(currentRotation) != 0.0
-    }
+    fun shouldUpdate() = !deactivateManipulation
 
     /**
      * Calculate difference between the server rotation and your rotation
@@ -266,27 +260,6 @@ object RotationManager : Listenable {
         if (ticksUntilReset > 0) {
             ticksUntilReset--
         }
-    }
-
-    /**
-     * Modify server-side rotations
-     */
-    val packetHandler = handler<PacketEvent> { event ->
-        val packet = event.packet
-
-        if (packet !is PlayerMoveC2SPacket || !packet.changesLook()) {
-            return@handler
-        }
-
-        if (!deactivateManipulation) {
-            currentRotation?.let {
-                packet.yaw = it.yaw
-                packet.pitch = it.pitch
-            }
-        }
-
-        // Update current rotation
-        serverRotation = Rotation(packet.yaw, packet.pitch)
     }
 
     /**

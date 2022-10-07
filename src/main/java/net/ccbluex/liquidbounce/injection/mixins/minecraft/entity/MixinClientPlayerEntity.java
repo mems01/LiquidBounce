@@ -154,32 +154,40 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         return playerEntity.isUsingItem();
     }
 
-    boolean updatedSilent;
-
-
     /**
      * Hook silent rotations
      */
     @ModifyVariable(method = "sendMovementPackets", at = @At("STORE"), ordinal = 3)
     private boolean hookSilentRotationsCheck(boolean bl4) {
         boolean shouldDisableRotations = ModuleFreeCam.INSTANCE.shouldDisableRotations();
-        updatedSilent = RotationManager.INSTANCE.needsUpdate(bl4);
-        return !shouldDisableRotations && updatedSilent;
+        return !shouldDisableRotations && bl4;
     }
 
-    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastPitch:F", ordinal = 1, shift = At.Shift.AFTER))
-    private void hookLastSilentRotations(CallbackInfo ci) {
-        if (updatedSilent) {
-            updatedSilent = false;
-
-            Rotation currRotation = RotationManager.INSTANCE.getCurrentRotation();
-            if (currRotation == null) {
-                return;
-            }
-
-            this.lastYaw = currRotation.getYaw();
-            this.lastPitch = currRotation.getPitch();
+    @Redirect(method = "sendMovementPackets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getYaw()F"))
+    private float hookSilentRotationYaw(ClientPlayerEntity instance) {
+        RotationManager rotationManager = RotationManager.INSTANCE;
+        Rotation rotation = rotationManager.getCurrentRotation();
+        if (rotation == null || !rotationManager.shouldUpdate()) {
+            return instance.getYaw();
         }
+
+        return rotation.getYaw();
+    }
+
+    @Redirect(method = "sendMovementPackets", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/network/ClientPlayerEntity;getPitch()F"))
+    private float hookSilentRotationPitch(ClientPlayerEntity instance) {
+        RotationManager rotationManager = RotationManager.INSTANCE;
+        Rotation rotation = rotationManager.getCurrentRotation();
+        if (rotation == null || !rotationManager.shouldUpdate()) {
+            return instance.getPitch();
+        }
+
+        return rotation.getPitch();
+    }
+
+    @Inject(method = "sendMovementPackets", at = @At(value = "FIELD", target = "Lnet/minecraft/client/network/ClientPlayerEntity;lastOnGround:Z", ordinal = 1))
+    private void hookUpdateServerRotation(CallbackInfo ci) {
+        RotationManager.INSTANCE.setServerRotation(new Rotation(this.lastYaw, this.lastPitch));
     }
 
     @Inject(method = "isSneaking", at = @At("HEAD"), cancellable = true)
