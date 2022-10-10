@@ -17,7 +17,7 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
         }
 
         if (packetName != "Any" && !event.packet.javaClass.simpleName.lowercase()
-                .contains(packetName.lowercase()) || event.packet !is PlayerMoveC2SPacket.Full || event.packet is PlayPongC2SPacket
+                .contains(packetName.lowercase()) || event.packet is PlayPongC2SPacket
         ) {
             return@handler
         }
