@@ -40,7 +40,8 @@ import kotlin.math.sqrt
  * Configurable to configure the dynamic rotation engine
  */
 class RotationsConfigurable : Configurable("Rotations") {
-    val turnSpeed by floatRange("TurnSpeed", 180f..180f, 1f..180f)
+    val angleLimit by floatRange("AngleLimit", 5f..10f, 180f..180f)
+    val speed by floatRange("Speed", 0.3f..0.6f, 0.05f..1f)
     val fixVelocity by boolean("FixVelocity", true)
     val strict by boolean("Strict", false)
     val horizontalPatternSpeed by float("HorizontalPatternSpeed", 0.01283f, 0.0f..0.09f)
@@ -182,26 +183,35 @@ object RotationManager : Listenable {
         }
 
         // Update rotations
-        val turnSpeed = this.activeConfigurable?.turnSpeed?.random() ?: return
+        val angleLimit = this.activeConfigurable?.angleLimit?.random() ?: return
+        val speed = this.activeConfigurable?.speed?.random() ?: return
 
         val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
-            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= turnSpeed) {
+            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= angleLimit) {
                 ticksUntilReset = -1
 
                 targetRotation = null
+                currentRotation?.let { rotation ->
+                    mc.player?.let { player ->
+                        player.yaw = rotation.yaw + angleDifference(player.yaw, rotation.yaw)
+                        player.renderYaw = player.yaw
+                        player.lastRenderYaw = player.yaw
+                    }
+                }
                 currentRotation = null
                 return
             }
             currentRotation = limitAngleChange(
-                currentRotation ?: serverRotation ?: return, playerRotation, turnSpeed
+                currentRotation ?: serverRotation ?: return, playerRotation, angleLimit, speed
             ).fixedSensitivity()
             return
         }
         targetRotation?.let { targetRotation ->
-            currentRotation =
-                limitAngleChange(currentRotation ?: playerRotation, targetRotation, turnSpeed).fixedSensitivity()
+            currentRotation = limitAngleChange(
+                currentRotation ?: playerRotation, targetRotation, angleLimit, speed
+            ).fixedSensitivity()
         }
     }
 
@@ -223,20 +233,25 @@ object RotationManager : Listenable {
     /**
      * Limit your rotations
      */
-    fun limitAngleChange(currentRotation: Rotation, targetRotation: Rotation, turnSpeed: Float): Rotation {
-        val yawDifference = angleDifference(targetRotation.yaw, currentRotation.yaw)
-        val pitchDifference = angleDifference(targetRotation.pitch, currentRotation.pitch)
+    fun limitAngleChange(
+        currentRotation: Rotation,
+        targetRotation: Rotation,
+        angleLimit: Float,
+        speed: Float,
+    ): Rotation {
+        var yawDifference = angleDifference(targetRotation.yaw, currentRotation.yaw)
+        var pitchDifference = angleDifference(targetRotation.pitch, currentRotation.pitch)
 
-        return Rotation(
-            currentRotation.yaw + yawDifference.coerceIn(-turnSpeed, turnSpeed),
-            currentRotation.pitch + pitchDifference.coerceIn(-turnSpeed, turnSpeed)
-        )
+        yawDifference = (yawDifference - yawDifference * (1 - speed)).coerceIn(-angleLimit, angleLimit)
+        pitchDifference = (pitchDifference - pitchDifference * (1 - speed)).coerceIn(-angleLimit, angleLimit)
+
+        return Rotation(currentRotation.yaw + yawDifference, currentRotation.pitch + pitchDifference)
     }
 
     /**
      * Calculate difference between two angle points
      */
-    private fun angleDifference(a: Float, b: Float) = ((a - b) % 360f + 540f) % 360f - 180f
+    private fun angleDifference(a: Float, b: Float) = MathHelper.wrapDegrees(a - b)
 
     /**
      * Modify server-side rotations

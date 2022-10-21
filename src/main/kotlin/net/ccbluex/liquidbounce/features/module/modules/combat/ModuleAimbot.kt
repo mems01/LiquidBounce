@@ -73,7 +73,7 @@ object ModuleAimbot : Module("Aimbot", Category.COMBAT) {
 
     val mouseRotationHandler = handler<MouseRotationEvent> {
         currentRotation?.let {
-            player.applyRotation(RotationManager.limitAngleChange(Rotation(player.yaw, player.pitch), it, 8.48f))
+            player.applyRotation(RotationManager.limitAngleChange(Rotation(player.yaw, player.pitch), it, 8.48f, 0.4f))
         }
     }
 
