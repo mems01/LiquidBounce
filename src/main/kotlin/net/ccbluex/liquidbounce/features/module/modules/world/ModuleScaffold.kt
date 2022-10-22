@@ -104,7 +104,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
 
         val target = currentTarget ?: return@handler
 
-        RotationManager.aimAt(target.rotation, ticks = 30, configurable = rotationsConfigurable)
+        RotationManager.aimAt(target.rotation, ticks = 10, configurable = rotationsConfigurable)
     }
 
     val networkTickHandler = repeatable {
@@ -132,7 +132,7 @@ object ModuleScaffold : Module("Scaffold", Category.WORLD) {
             }.maxWithOrNull { o1, o2 -> BLOCK_COMPARATOR.compare(o1.second, o2.second) }?.first
 
             if (slot != null) {
-                SilentHotbar.selectSlotSilently(this, slot, 20)
+                SilentHotbar.selectSlotSilently(this, slot, 10)
 
                 hasBlockInHand = true
             }
