@@ -65,7 +65,7 @@ public class MixinClientConnection {
      */
     @Inject(method = "send(Lnet/minecraft/network/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void hookSendingPacket(Packet<?> packet, final CallbackInfo callbackInfo) {
-        final PacketEvent event = new PacketEvent(TransferOrigin.SEND, packet);
+        final PacketEvent event = new PacketEvent(TransferOrigin.SEND, packet, true);
 
         EventManager.INSTANCE.callEvent(event);
 
@@ -82,7 +82,7 @@ public class MixinClientConnection {
      */
     @Inject(method = "channelRead0", at = @At("HEAD"), cancellable = true)
     private void hookReceivingPacket(ChannelHandlerContext channelHandlerContext, Packet<?> packet, CallbackInfo callbackInfo) {
-        final PacketEvent event = new PacketEvent(TransferOrigin.RECEIVE, packet);
+        final PacketEvent event = new PacketEvent(TransferOrigin.RECEIVE, packet, true);
 
         EventManager.INSTANCE.callEvent(event);
 
