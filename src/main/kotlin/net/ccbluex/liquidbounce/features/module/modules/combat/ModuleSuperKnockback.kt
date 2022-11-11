@@ -19,12 +19,11 @@
 
 package net.ccbluex.liquidbounce.features.module.modules.combat
 
-import net.ccbluex.liquidbounce.event.AttackEvent
-import net.ccbluex.liquidbounce.event.handler
+import net.ccbluex.liquidbounce.event.PostAttackEvent
+import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
-import net.minecraft.entity.LivingEntity
-import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
+import net.minecraft.client.option.KeyBinding
 
 /**
  * SuperKnockback module
@@ -33,23 +32,35 @@ import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket
  */
 object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
 
-    val hurtTime by int("HurtTime", 10, 0..10)
+    val attackHandler = sequenceHandler<PostAttackEvent> { event ->
+        val wasSprinting = player.lastSprinting
 
-    val attackHandler = handler<AttackEvent> { event ->
-        val enemy = event.enemy
+        if (!wasSprinting) {
+            return@sequenceHandler
+        }
 
-        if (enemy is LivingEntity && enemy.hurtTime <= hurtTime && !ModuleCriticals.wouldCrit()) {
-            if (player.isSprinting) {
-                network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.STOP_SPRINTING))
-            }
+        waitUntil { player.isSprinting == player.lastSprinting }
 
-            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_SPRINTING))
-            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.STOP_SPRINTING))
-            network.sendPacket(ClientCommandC2SPacket(player, ClientCommandC2SPacket.Mode.START_SPRINTING))
+        if (player.isSprinting) {
+            mc.options.sprintKey.isPressed = false
 
-            player.isSprinting = true
-            player.lastSprinting = true
+            player.isSprinting = false
+
+            waitUntil { player.isSprinting == player.lastSprinting }
+
+            mc.options.sprintKey.isPressed = true
+
+            waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > 1 }
+
+            KeyBinding.updatePressedStates()
+        } else {
+            mc.options.sprintKey.isPressed = true
+
+            waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > 0 }
+
+            KeyBinding.updatePressedStates()
         }
     }
+
 
 }

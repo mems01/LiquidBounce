@@ -19,16 +19,14 @@
 
 package net.ccbluex.liquidbounce.injection.mixins.minecraft.entity;
 
-import net.ccbluex.liquidbounce.event.EventManager;
-import net.ccbluex.liquidbounce.event.PlayerJumpEvent;
-import net.ccbluex.liquidbounce.event.PlayerSafeWalkEvent;
-import net.ccbluex.liquidbounce.event.PlayerStrideEvent;
+import net.ccbluex.liquidbounce.event.*;
 import net.ccbluex.liquidbounce.features.module.modules.exploit.ModuleAntiReducedDebugInfo;
 import net.ccbluex.liquidbounce.utils.aiming.Rotation;
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager;
 import net.ccbluex.liquidbounce.utils.client.SilentHotbar;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
@@ -127,5 +125,14 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
         if (jumpEvent.isCancelled()) {
             ci.cancel();
         }
+    }
+
+    @Inject(method = "attack", at = @At("TAIL"))
+    private void hook(Entity target, CallbackInfo ci) {
+        if ((Object) this != MinecraftClient.getInstance().player) {
+            return;
+        }
+
+        EventManager.INSTANCE.callEvent(new PostAttackEvent(target));
     }
 }

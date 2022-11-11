@@ -105,6 +105,9 @@ class MouseRotationEvent(var cursorDeltaX: Double, var cursorDeltaY: Double) : C
 @Nameable("attack")
 class AttackEvent(val enemy: Entity) : Event()
 
+@Nameable("postAttack")
+class PostAttackEvent(val enemy: Entity) : Event()
+
 @Nameable("session")
 class SessionEvent : Event()
 
