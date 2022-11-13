@@ -4,8 +4,8 @@ import net.ccbluex.liquidbounce.event.PacketEvent
 import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.utils.client.chat
+import net.minecraft.network.Packet
 import net.minecraft.network.packet.c2s.play.PlayPongC2SPacket
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 
 object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Category.MISC) {
     val packets by boolean("Packets", false)
@@ -22,7 +22,10 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
             return@handler
         }
 
-        val packet = event.packet
+        detailedInfo(event.packet)
+    }
+
+    fun detailedInfo(packet: Packet<*>) {
         var clazz: Class<*> = packet::class.java
 
         chat(" ")

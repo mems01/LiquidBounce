@@ -41,25 +41,21 @@ object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
 
         waitUntil { player.isSprinting == player.lastSprinting }
 
+        val ticks = if (player.isSprinting) 1 else 0
+
         if (player.isSprinting) {
             mc.options.sprintKey.isPressed = false
 
             player.isSprinting = false
 
             waitUntil { player.isSprinting == player.lastSprinting }
-
-            mc.options.sprintKey.isPressed = true
-
-            waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > 1 }
-
-            KeyBinding.updatePressedStates()
-        } else {
-            mc.options.sprintKey.isPressed = true
-
-            waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > 0 }
-
-            KeyBinding.updatePressedStates()
         }
+        
+        mc.options.sprintKey.isPressed = true
+
+        waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > ticks }
+
+        KeyBinding.updatePressedStates()
     }
 
 
