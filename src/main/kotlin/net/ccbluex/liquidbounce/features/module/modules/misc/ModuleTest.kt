@@ -11,6 +11,8 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
     val packets by boolean("Packets", false)
     val packetName by text("Name For Packet", "Any")
 
+    var packet: Packet<*>? = null
+
     val packetHandler = handler<PacketEvent> { event ->
         if (!packets) {
             return@handler
@@ -22,7 +24,13 @@ object ModuleTest : net.ccbluex.liquidbounce.features.module.Module("Test", Cate
             return@handler
         }
 
+        if (event.packet == packet) {
+            return@handler
+        }
+
         detailedInfo(event.packet)
+
+        packet = event.packet
     }
 
     fun detailedInfo(packet: Packet<*>) {

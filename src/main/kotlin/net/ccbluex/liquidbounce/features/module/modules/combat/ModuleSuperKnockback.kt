@@ -33,16 +33,15 @@ import net.minecraft.client.option.KeyBinding
 object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
 
     val attackHandler = sequenceHandler<PostAttackEvent> { event ->
-        val wasSprinting = player.lastSprinting
-
-        if (!wasSprinting) {
+        // If player was not sprinting, then why bother?
+        if (!player.lastSprinting) {
             return@sequenceHandler
         }
 
+        // Wait until player's sprint state is updated server-side
         waitUntil { player.isSprinting == player.lastSprinting }
 
-        val ticks = if (player.isSprinting) 1 else 0
-
+        // This gets called if player either hit an animal/mob or the sprint button was pressed
         if (player.isSprinting) {
             mc.options.sprintKey.isPressed = false
 
@@ -50,10 +49,11 @@ object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
 
             waitUntil { player.isSprinting == player.lastSprinting }
         }
-        
+        // If player was not holding the sprint button but was sprinting, then start sprinting
         mc.options.sprintKey.isPressed = true
 
-        waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > ticks }
+        // Wait until player is sprinting and ticks since sprint is more than 1 to avoid constant re-sprinting
+        waitUntil { player.isSprinting && player.ticksSinceSprintingChanged > 1 }
 
         KeyBinding.updatePressedStates()
     }
