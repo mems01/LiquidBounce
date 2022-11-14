@@ -80,7 +80,8 @@ open class Module(
                 NotificationEvent.Severity.INFO
             )
 
-            val notInGame = (mc.player == null || mc.world == null) && new
+            val notInGame =
+                (mc.player == null || mc.world == null || mc.networkHandler == null || mc.interactionManager == null) && new
 
             // Call out module event
             EventManager.callEvent(ToggleModuleEvent(this, new, notInGame))
@@ -136,7 +137,8 @@ open class Module(
     /**
      * Events should be handled when module is enabled
      */
-    override fun handleEvents() = enabled && mc.player != null && mc.world != null
+    override fun handleEvents() =
+        enabled && mc.player != null && mc.world != null && mc.networkHandler != null && mc.interactionManager != null
 
     fun message(key: String, vararg args: Any): TranslatableText {
         return TranslatableText("$translationBaseKey.messages.$key", args)

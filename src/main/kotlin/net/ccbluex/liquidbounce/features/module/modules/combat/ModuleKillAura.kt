@@ -170,7 +170,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
         // Check if there is target to attack
         val target = targetTracker.lockedOnTarget ?: return@repeatable
         // Did you ever send a rotation before?
-        val rotation = RotationManager.serverRotation ?: return@repeatable
+        val rotation = RotationManager.currentRotation ?: return@repeatable
 
         if (target.boxedDistanceTo(player) <= range && facingEnemy(target, range.toDouble(), rotation)) {
             // Check if between enemy and player is another entity
@@ -278,9 +278,17 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             val box = target.boundingBox.offset(targetPrediction)
 
             // find best spot (and skip if no spot was found)
-            val (rotation, _) = RotationManager.raytraceBox(
-                eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
-            ) ?: continue
+            val rotation = RotationManager.raytraceBox(
+                eyes.add(playerPrediction),
+                box,
+                range = sqrt(scanRange),
+                wallsRange = wallRange.toDouble()
+            )?.rotation
+
+            if (rotation == null) {
+                targetTracker.cleanup()
+                continue
+            }
 
             // lock on target tracker
             targetTracker.lock(target)
