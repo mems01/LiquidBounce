@@ -34,6 +34,7 @@ import net.minecraft.client.input.Input;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.MovementType;
+import net.minecraft.entity.player.PlayerAbilities;
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.math.Vec3d;
@@ -217,6 +218,11 @@ public abstract class MixinClientPlayerEntity extends MixinPlayerEntity {
         if (ModulePerfectHorseJump.INSTANCE.getEnabled()) {
             callbackInfoReturnable.setReturnValue(1f);
         }
+    }
+
+    @Redirect(method = "tickMovement", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerAbilities;allowFlying:Z", ordinal = 1))
+    private boolean hookFreeCamPreventCreativeFly(PlayerAbilities instance) {
+        return !ModuleFreeCam.INSTANCE.getEnabled() && instance.allowFlying;
     }
 
 }
