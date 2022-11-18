@@ -82,18 +82,23 @@ object ModuleProjectilePuncher : Module("ProjectilePuncher", Category.WORLD) {
                 }
 
                 // find best spot (and skip if no spot was found)
-                val (rotation, _) = RotationManager.raytraceBox(
+                val spot = RotationManager.raytraceBox(
                     player.eyesPos,
                     entity.boundingBox,
                     range = range.toDouble(),
                     wallsRange = 0.0
-                ) ?: continue
+                )
+
+                if (spot == null) {
+                    targetTracker.cleanup()
+                    continue
+                }
 
                 // lock on target tracker
                 targetTracker.lock(entity)
 
                 // aim at target
-                RotationManager.aimAt(rotation, configurable = rotations)
+                RotationManager.aimAt(spot.rotation, configurable = rotations)
                 break
             }
         }

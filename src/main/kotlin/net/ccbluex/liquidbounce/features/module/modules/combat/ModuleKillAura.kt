@@ -278,14 +278,11 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             val box = target.boundingBox.offset(targetPrediction)
 
             // find best spot (and skip if no spot was found)
-            val rotation = RotationManager.raytraceBox(
-                eyes.add(playerPrediction),
-                box,
-                range = sqrt(scanRange),
-                wallsRange = wallRange.toDouble()
-            )?.rotation
+            val spot = RotationManager.raytraceBox(
+                eyes.add(playerPrediction), box, range = sqrt(scanRange), wallsRange = wallRange.toDouble()
+            )
 
-            if (rotation == null) {
+            if (spot == null) {
                 targetTracker.cleanup()
                 continue
             }
@@ -294,7 +291,7 @@ object ModuleKillAura : Module("KillAura", Category.COMBAT) {
             targetTracker.lock(target)
 
             // aim at target
-            RotationManager.aimAt(rotation, configurable = rotations)
+            RotationManager.aimAt(spot.rotation, configurable = rotations)
             break
         }
     }
