@@ -87,10 +87,10 @@ object ModuleFucker : Module("Fucker", Category.WORLD) {
         }
 
         val curr = currentTarget ?: return@repeatable
-        val serverRotation = RotationManager.currentRotation ?: return@repeatable
+        val currentRotation = RotationManager.currentRotation ?: return@repeatable
 
         val rayTraceResult = raytraceBlock(
-            range.toDouble(), serverRotation, curr.pos, curr.pos.getState() ?: return@repeatable
+            range.toDouble(), currentRotation, curr.pos, curr.pos.getState() ?: return@repeatable
         ) ?: return@repeatable
 
         if (rayTraceResult.type != HitResult.Type.BLOCK || rayTraceResult.blockPos != curr.pos) {

@@ -89,11 +89,11 @@ object ModuleCrystalAura : Module("CrystalAura", Category.WORLD) {
 
             updateTarget()
             val curr = currentBlock ?: return@repeatable
-            val serverRotation = RotationManager.serverRotation ?: return@repeatable
+            val currentRotation = RotationManager.currentRotation ?: return@repeatable
 
             val rayTraceResult = raytraceBlock(
                 range.toDouble(),
-                serverRotation,
+                currentRotation,
                 curr,
                 curr.getState() ?: return@repeatable
             )
