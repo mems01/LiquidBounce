@@ -110,7 +110,7 @@ object ModuleChestAura : Module("ChestAura", Category.WORLD) {
 
         val rayTraceResult = raytraceBlock(
             range.toDouble(),
-            serverRotation,
+            currentRotation,
             curr,
             curr.getState() ?: return@repeatable
         )
