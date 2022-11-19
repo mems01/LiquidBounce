@@ -110,6 +110,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         suspectList.add(entry.profile.id)
                     }
                 }
+
                 PlayerListS2CPacket.Action.REMOVE_PLAYER -> {
                     for (entry in it.packet.entries) {
                         if (suspectList.contains(entry.profile.id)) {
@@ -121,6 +122,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         }
                     }
                 }
+
                 else -> {}
             }
         }
@@ -209,6 +211,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         suspectList[entry.profile.id] = Pair(entry.latency, System.currentTimeMillis())
                     }
                 }
+
                 PlayerListS2CPacket.Action.REMOVE_PLAYER -> {
                     for (entry in it.packet.entries) {
                         if (suspectList.containsKey(entry.profile.id)) {
@@ -220,6 +223,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         }
                     }
                 }
+
                 PlayerListS2CPacket.Action.UPDATE_LATENCY -> {
                     for (entry in it.packet.entries) {
                         if (!suspectList.containsKey(entry.profile.id)) {
@@ -243,6 +247,7 @@ object ModuleAntiBot : Module("AntiBot", Category.MISC) {
                         suspectList.remove(entry.profile.id)
                     }
                 }
+
                 else -> {}
             }
         }

@@ -45,7 +45,7 @@ abstract class AbstractFontRenderer {
         defaultColor: Color4b,
         shadow: Boolean = false,
         z: Float = 0.0f,
-        scale: Float = 1.0f
+        scale: Float = 1.0f,
     ): Float
 
     /**
@@ -58,6 +58,6 @@ abstract class AbstractFontRenderer {
      */
     abstract fun getStringWidth(
         text: String,
-        shadow: Boolean = false
+        shadow: Boolean = false,
     ): Float
 }

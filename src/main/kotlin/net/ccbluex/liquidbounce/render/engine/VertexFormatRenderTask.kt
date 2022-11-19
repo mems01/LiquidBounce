@@ -56,6 +56,7 @@ class VertexFormatRenderTask<T>(
             OpenGLLevel.OPENGL3_3, OpenGLLevel.OPENGL4_3 -> {
                 shaderHandler.bind(mvpMatrix, this.shaderData)
             }
+
             else -> {
                 this.vertexFormat.components.forEach {
                     GL11.glEnableClientState(it.attribInfo.attributeType.openGlClientState)
@@ -87,18 +88,21 @@ class VertexFormatRenderTask<T>(
                             this.vertexFormat.length,
                             it.offset.toLong()
                         )
+
                         AttributeType.Color -> GL11.glColorPointer(
                             it.count,
                             it.type.openGlEnum,
                             this.vertexFormat.length,
                             it.offset.toLong()
                         )
+
                         AttributeType.Texture -> GL11.glTexCoordPointer(
                             it.count,
                             it.type.legacyOpenGlEnum,
                             this.vertexFormat.length,
                             it.offset.toLong()
                         )
+
                         else -> throw IllegalStateException()
                     }
                 }
@@ -213,6 +217,7 @@ class VertexFormatRenderTask<T>(
                 // Unbind VAOs, only needs to be done once during rendering
                 GL33.glBindVertexArray(0)
             }
+
             else -> {
                 this.vertexFormat.components.forEach {
                     GL11.glDisableClientState(it.attribInfo.attributeType.openGlClientState)

@@ -125,6 +125,7 @@ object Tabs {
      */
     private class Head(val name: String, val uuid: UUID, val value: String)
     private class HeadsService(val enabled: Boolean, val url: String)
+
     private var headsCollection: Array<Head> = runCatching {
         logger.info("Loading heads...")
         // Load head service from cloud
@@ -166,7 +167,7 @@ object Tabs {
 open class LiquidsItemGroup(
     val plainName: String,
     val icon: () -> ItemStack,
-    val items: (items: MutableList<ItemStack>) -> Unit
+    val items: (items: MutableList<ItemStack>) -> Unit,
 ) {
 
     // Create item group and assign to minecraft groups

@@ -56,13 +56,19 @@ object Cosmetics {
                 RenderSystem.recordRenderCall {
                     val string = Hashing.sha1().hashUnencodedChars(uuid.toString()).toString()
                     val identifier = Identifier("cosmetic_capes/$string")
-                    val abstractTexture: AbstractTexture = mc.textureManager.getOrDefault(identifier, MissingSprite.getMissingSpriteTexture())
+                    val abstractTexture: AbstractTexture =
+                        mc.textureManager.getOrDefault(identifier, MissingSprite.getMissingSpriteTexture())
 
                     if (abstractTexture === MissingSprite.getMissingSpriteTexture()) {
                         val file = File(capesFolder, if (string.length > 2) string.substring(0, 2) else "xx")
                         val file2 = File(file, string)
 
-                        val playerSkinTexture = PlayerSkinTexture(file2, String.format(CAPES_API, uuid.toString().replace("-", "")), DefaultSkinHelper.getTexture(), false) {
+                        val playerSkinTexture = PlayerSkinTexture(
+                            file2,
+                            String.format(CAPES_API, uuid.toString().replace("-", "")),
+                            DefaultSkinHelper.getTexture(),
+                            false
+                        ) {
                             callback?.onSkinTextureAvailable(MinecraftProfileTexture.Type.CAPE, identifier, null)
                         }
 

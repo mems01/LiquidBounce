@@ -25,9 +25,9 @@ import com.google.gson.annotations.SerializedName
 data class ClientMojangInfoPacket(
 
     @SerializedName("session_hash")
-    val sessionHash: String
+    val sessionHash: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * After the client sent the server a RequestJWT packet, the server will provide the client with json web token.
@@ -38,9 +38,9 @@ data class ClientMojangInfoPacket(
 data class ClientNewJWTPacket(
 
     @SerializedName("token")
-    val token: String
+    val token: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * This packet will be sent to every authenticated client,
@@ -59,9 +59,9 @@ data class ClientMessagePacket(
     val user: User,
 
     @SerializedName("content")
-    val content: String
+    val content: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * This packet will be sent to a authenticated client with allow_messages turned on,
@@ -80,9 +80,9 @@ data class ClientPrivateMessagePacket(
     val user: User,
 
     @SerializedName("content")
-    val content: String
+    val content: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * This packet is sent after either LoginMojang, LoginJWT, BanUser or UnbanUser were processed successfully.
@@ -92,9 +92,9 @@ data class ClientPrivateMessagePacket(
 data class ClientSuccessPacket(
 
     @SerializedName("reason")
-    val reason: String
+    val reason: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * This packet may be sent at any time, but is usually a response to a failed action of the client.
@@ -104,6 +104,6 @@ data class ClientSuccessPacket(
 data class ClientErrorPacket(
 
     @SerializedName("message")
-    val message: String
+    val message: String,
 
-) : Packet
+    ) : Packet

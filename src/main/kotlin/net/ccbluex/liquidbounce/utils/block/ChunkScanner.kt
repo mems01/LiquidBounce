@@ -111,6 +111,7 @@ object ChunkScanner : Listenable {
                                 chunkUpdate.x,
                                 chunkUpdate.z
                             )
+
                             is UpdateRequest.BlockUpdateEvent -> {
                                 for (sub in subscriber) {
                                     sub.recordBlock(chunkUpdate.blockPos, chunkUpdate.newState, false)

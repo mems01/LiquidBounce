@@ -93,7 +93,7 @@ class ViewLoadListener(private val view: View) : UltralightLoadListener {
         url: String,
         description: String,
         errorDomain: String,
-        errorCode: Int
+        errorCode: Int,
     ) {
         logger.error("${frameName(frameId, isMainFrame, url)}Failed to load $errorDomain, $errorCode($description)")
     }
@@ -101,7 +101,7 @@ class ViewLoadListener(private val view: View) : UltralightLoadListener {
     /**
      * Called by Ultralight when the history of a view changes.
      */
-    override fun onUpdateHistory() { }
+    override fun onUpdateHistory() {}
 
     /**
      * Called by Ultralight when the window object is ready. This point can be used to inject Javascript.
@@ -124,6 +124,6 @@ class ViewLoadListener(private val view: View) : UltralightLoadListener {
      * @param isMainFrame Whether the frame is the main frame
      * @param url         The url that the frame currently contains
      */
-    override fun onDOMReady(frameId: Long, isMainFrame: Boolean, url: String) { }
+    override fun onDOMReady(frameId: Long, isMainFrame: Boolean, url: String) {}
 
 }

@@ -170,5 +170,10 @@ open class View(val layer: RenderLayer, private val viewRenderer: ViewRenderer) 
 
 }
 
-class ScreenView(viewRenderer: ViewRenderer, val screen: Screen, val adaptedScreen: Screen?, val parentScreen: Screen?) :
+class ScreenView(
+    viewRenderer: ViewRenderer,
+    val screen: Screen,
+    val adaptedScreen: Screen?,
+    val parentScreen: Screen?,
+) :
     View(RenderLayer.SCREEN_LAYER, viewRenderer)

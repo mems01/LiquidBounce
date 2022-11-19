@@ -125,6 +125,7 @@ class DelegatedVertexFormatComponent<T>(
                     else -> throw IllegalStateException()
                 }
             }
+
             VertexFormatComponentDataType.GlShort -> bufferBuilder.buffer.putShort(offset, value as Short)
             VertexFormatComponentDataType.GlUnsignedShort -> {
                 when (vertexFormatComponent.count) {
@@ -133,6 +134,7 @@ class DelegatedVertexFormatComponent<T>(
                     else -> throw IllegalStateException()
                 }
             }
+
             VertexFormatComponentDataType.GlInt -> bufferBuilder.buffer.putInt(offset, value as Int)
             VertexFormatComponentDataType.GlUnsignedInt -> bufferBuilder.buffer.putInt(offset, value as Int)
             VertexFormatComponentDataType.GlFloat -> {
@@ -143,6 +145,7 @@ class DelegatedVertexFormatComponent<T>(
                 }
 
             }
+
             VertexFormatComponentDataType.GlDouble -> bufferBuilder.buffer.putDouble(offset, value as Double)
             else -> throw IllegalStateException("Not implemented")
         }

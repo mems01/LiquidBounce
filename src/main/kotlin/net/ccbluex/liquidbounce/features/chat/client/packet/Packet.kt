@@ -21,7 +21,7 @@ data class SerializedPacket(
     val packetName: String,
 
     @SerializedName("c")
-    val packetContent: Packet?
+    val packetContent: Packet?,
 )
 
 /**
@@ -34,5 +34,5 @@ data class User(
     @SerializedName("name")
     val name: String,
     @SerializedName("uuid")
-    val uuid: UUID
+    val uuid: UUID,
 )

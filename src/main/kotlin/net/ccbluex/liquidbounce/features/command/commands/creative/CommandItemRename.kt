@@ -52,7 +52,12 @@ object CommandItemRename {
                 }
 
                 itemStack!!.setCustomName(name.translateColorCodes().asText())
-                mc.networkHandler!!.sendPacket(CreativeInventoryActionC2SPacket(36 + mc.player!!.inventory.selectedSlot, itemStack))
+                mc.networkHandler!!.sendPacket(
+                    CreativeInventoryActionC2SPacket(
+                        36 + mc.player!!.inventory.selectedSlot,
+                        itemStack
+                    )
+                )
                 chat(regular(command.result("renamedItem", itemStack.item.name, variable(name))))
             }
             .build()

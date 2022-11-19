@@ -41,9 +41,9 @@ data class ServerLoginMojangPacket(
     val uuid: UUID,
 
     @SerializedName("allow_messages")
-    val allowMessages: Boolean
+    val allowMessages: Boolean,
 
-) : Packet
+    ) : Packet
 
 /**
  * To login using a json web token, the client has to send a LoginJWT packet.
@@ -58,9 +58,9 @@ data class ServerLoginJWTPacket(
     val token: String,
 
     @SerializedName("allow_messages")
-    val allowMessages: Boolean
+    val allowMessages: Boolean,
 
-) : Packet
+    ) : Packet
 
 /**
  * The content of this packet will be sent to every client as Message if it fits the validation scheme.
@@ -70,9 +70,9 @@ data class ServerLoginJWTPacket(
 data class ServerMessagePacket(
 
     @SerializedName("content")
-    val content: String
+    val content: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * The content of this packet will be sent to the specified client as PrivateMessage if it fits the validation scheme.
@@ -86,9 +86,9 @@ data class ServerPrivateMessagePacket(
     val receiver: String,
 
     @SerializedName("content")
-    val content: String
+    val content: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * A client can send this packet to ban other users from using this chat.
@@ -98,9 +98,9 @@ data class ServerPrivateMessagePacket(
 data class ServerBanUserPacket(
 
     @SerializedName("user")
-    val user: String
+    val user: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * A client can send this packet to unban other users.
@@ -110,9 +110,9 @@ data class ServerBanUserPacket(
 data class ServerUnbanUserPacket(
 
     @SerializedName("user")
-    val user: String
+    val user: String,
 
-) : Packet
+    ) : Packet
 
 /**
  * To login using LoginJWT, a client needs to own a json web token.

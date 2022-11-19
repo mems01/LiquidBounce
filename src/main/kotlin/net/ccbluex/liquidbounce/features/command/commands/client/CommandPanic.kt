@@ -56,6 +56,7 @@ object CommandPanic {
                         modules = modules.filter { it.category != Category.RENDER }
                         msg = command.result("disabledAllCategoryModules", command.result("nonRender"))
                     }
+
                     else -> {
                         val category = Category.values().find { it.readableName.equals(type, true) }
                             ?: throw CommandException(command.result("categoryNotFound", type))

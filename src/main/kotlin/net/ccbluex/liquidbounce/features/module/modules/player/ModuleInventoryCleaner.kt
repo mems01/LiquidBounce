@@ -286,6 +286,7 @@ object ModuleInventoryCleaner : Module("InventoryCleaner", Category.PLAYER) {
 
                     WeightedToolItem(stack, slotId)
                 }
+
                 is FishingRodItem -> WeightedRodItem(stack, slotId)
                 is ShieldItem -> WeightedShieldItem(stack, slotId)
                 is BlockItem -> WeightedBlockItem(stack, slotId)
@@ -297,12 +298,14 @@ object ModuleInventoryCleaner : Module("InventoryCleaner", Category.PLAYER) {
                         else -> WeightedPrimitiveItem(stack, slotId, ItemCategory(ItemType.BUCKET, 3))
                     }
                 }
+
                 is EnderPearlItem -> WeightedPrimitiveItem(stack, slotId, ItemCategory(ItemType.PEARL, 0))
                 Items.GOLDEN_APPLE -> {
                     items.add(WeightedFoodItem(stack, slotId))
 
                     WeightedPrimitiveItem(stack, slotId, ItemCategory(ItemType.GAPPLE, 0))
                 }
+
                 Items.ENCHANTED_GOLDEN_APPLE -> {
                     items.add(WeightedFoodItem(stack, slotId))
 
@@ -310,6 +313,7 @@ object ModuleInventoryCleaner : Module("InventoryCleaner", Category.PLAYER) {
                         stack, slotId, ItemCategory(ItemType.GAPPLE, 0), 1
                     )
                 }
+
                 else -> {
                     if (stack.isFood) {
                         WeightedFoodItem(stack, slotId)

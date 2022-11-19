@@ -104,6 +104,7 @@ object ModuleSpeed : Module("Speed", Category.MOVEMENT) {
                         player.strafe(speed = horizontalSpeed.toDouble())
                         player.velocity.y = verticalSpeed.toDouble()
                     }
+
                     customStrafe -> player.strafe(speed = strafe.toDouble())
                     else -> player.strafe()
                 }

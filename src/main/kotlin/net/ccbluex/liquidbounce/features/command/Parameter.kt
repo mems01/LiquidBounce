@@ -23,7 +23,7 @@ import net.minecraft.text.TranslatableText
 
 class ParameterValidationResult<T> private constructor(
     val errorMessage: String?,
-    val mappedResult: T?
+    val mappedResult: T?,
 ) {
 
     companion object {
@@ -44,7 +44,7 @@ class Parameter<T>(
     val verifier: ParameterVerifier<T>?,
     val autocompletionHandler: AutoCompletionHandler?,
     val useMinecraftAutoCompletion: Boolean,
-    var command: Command? = null
+    var command: Command? = null,
 ) {
     val translationBaseKey: String
         get() = "${command?.translationBaseKey}.parameter.$name"

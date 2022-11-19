@@ -173,7 +173,7 @@ object CommandManager : Iterable<Command> {
     private fun getSubCommand(
         args: List<String>,
         currentCommand: Pair<Command, Int>? = null,
-        idx: Int = 0
+        idx: Int = 0,
     ): Pair<Command, Int>? {
         // Return the last command when there are no more arguments
         if (idx >= args.size) {

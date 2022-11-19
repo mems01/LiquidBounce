@@ -247,6 +247,7 @@ class FontRenderer(
                         underline = false
                         strikeThrough = false
                     }
+
                     16 -> obfuscated = true
                     17 -> style = style or Font.BOLD
                     18 -> {
@@ -255,12 +256,14 @@ class FontRenderer(
                             strikeThrough = true
                         }
                     }
+
                     19 -> {
                         if (!underline) {
                             underlineStart = x
                             underline = true
                         }
                     }
+
                     20 -> style = style or Font.ITALIC
                     21 -> {
                         currentColor = defaultColor
@@ -277,6 +280,7 @@ class FontRenderer(
                         underline = false
                         strikeThrough = false
                     }
+
                     else -> shouldContinue = true
                 }
 
@@ -362,6 +366,7 @@ class FontRenderer(
                         style = 0
                         obfuscated = false
                     }
+
                     16 -> obfuscated = true
                     17 -> style = style or Font.BOLD
                     20 -> style = style or Font.ITALIC

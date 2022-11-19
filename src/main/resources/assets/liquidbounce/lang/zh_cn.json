@@ -413,9 +413,9 @@
   "liquidbounce.module.sleepWalker.description": "允许你在睡觉时走动, 同时减小你的碰撞箱.",
 
   "liquidbounce.module.dankBobbing.description": "加入更多的气泡动画效果.",
-  
+
   "liquidbounce.module.projectilePuncher.description": "自动把射向你的火球或潜影贝导弹打回去.",
-  
+
   "liquidbounce.module.autoPot.description": "当血量低时自动使用治疗药水."
 
 }

@@ -64,7 +64,7 @@
   "liquidbounce.command.friend.subcommand.add.parameter.alias.description": "Необязательный псевдоним друга.",
   "liquidbounce.command.friend.subcommand.add.result.alreadyFriends": "%s уже в списке друзей.",
   "liquidbounce.command.friend.subcommand.add.result.success": "%s был успешно добавлен в список друзей",
-  "liquidbounce.command.friend.subcommand.add.result.successAlias":  "%s был успешно добавлен в список друзей как %s",
+  "liquidbounce.command.friend.subcommand.add.result.successAlias": "%s был успешно добавлен в список друзей как %s",
 
   "liquidbounce.command.friend.subcommand.remove.description": "Удаляет друга из списка друзей.",
   "liquidbounce.command.friend.subcommand.remove.parameter.name.description": "Имя друга.",

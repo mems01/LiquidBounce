@@ -32,7 +32,7 @@ class Command(
     val subcommands: Array<Command>,
     val executable: Boolean,
     val handler: CommandHandler?,
-    var parentCommand: Command? = null
+    var parentCommand: Command? = null,
 ) {
     val translationBaseKey: String
         get() = "liquidbounce.command.${getParentKeys(this, name)}"
@@ -60,7 +60,10 @@ class Command(
 
     private fun getParentKeys(currentCommand: Command?, current: String): String {
         val parentName = currentCommand?.parentCommand?.name
-        return if (parentName != null) getParentKeys(currentCommand.parentCommand, "$parentName.subcommand.$current") else current
+        return if (parentName != null) getParentKeys(
+            currentCommand.parentCommand,
+            "$parentName.subcommand.$current"
+        ) else current
     }
 
     fun result(key: String, vararg args: Any): TranslatableText {
@@ -124,7 +127,7 @@ class Command(
         builder: SuggestionsBuilder,
         tokenizationResult: Pair<List<String>, List<Int>>,
         commandIdx: Int,
-        isNewParameter: Boolean
+        isNewParameter: Boolean,
     ) {
         val args = tokenizationResult.first
 

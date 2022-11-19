@@ -90,7 +90,8 @@ class Script(val scriptFile: File) {
         override fun apply(scriptObject: JSObject): Script {
             scriptName = scriptObject.getMember("name") as String
             scriptVersion = scriptObject.getMember("version") as String
-            scriptAuthors = ScriptUtils.convert(scriptObject.getMember("authors"), Array<String>::class.java) as Array<String>
+            scriptAuthors =
+                ScriptUtils.convert(scriptObject.getMember("authors"), Array<String>::class.java) as Array<String>
 
             return this@Script
         }

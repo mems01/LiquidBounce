@@ -352,6 +352,7 @@ object ModuleTrajectories : Module("Trajectories", Category.RENDER) {
                     motionFactor = power.coerceAtMost(1.0F) * 3.0F
                 )
             }
+
             is FishingRodItem -> {
                 return TrajectoryInfo(
                     0.04F,
@@ -359,6 +360,7 @@ object ModuleTrajectories : Module("Trajectories", Category.RENDER) {
                     motionSlowdown = 0.92F
                 )
             }
+
             is PotionItem -> {
                 return TrajectoryInfo(
                     0.05F,
@@ -367,6 +369,7 @@ object ModuleTrajectories : Module("Trajectories", Category.RENDER) {
                     pitchSubtrahend = 20.0F
                 )
             }
+
             else -> return TrajectoryInfo(0.03F, 0.25F)
         }
     }

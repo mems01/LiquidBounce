@@ -35,7 +35,6 @@ import net.minecraft.block.BedBlock
 import net.minecraft.block.Block
 import net.minecraft.block.Blocks
 import net.minecraft.block.CakeBlock
-import net.minecraft.block.DragonEggBlock
 import net.minecraft.client.gui.screen.ingame.HandledScreen
 import net.minecraft.network.packet.c2s.play.HandSwingC2SPacket
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket

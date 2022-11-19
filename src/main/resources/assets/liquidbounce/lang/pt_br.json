@@ -313,7 +313,8 @@
   "liquidbounce.module.itemEsp.description": "Deixa você ver itens dropados pela parede.",
 
   "liquidbounce.module.nametags.description": "Faz nomes mais viziveis e mostra mais informações
-.",
+  .
+  ",
 
   "liquidbounce.module.traces.description": "Mostra linhas em entidades a uma certa distancia de você.",
 
@@ -437,9 +438,9 @@
   "liquidbounce.module.sleepWalker.description": "Te deixa andar em quanto dorme.",
 
   "liquidbounce.module.dankBobbing.description": "Adiciona mais efeitos de camera.",
-  
+
   "liquidbounce.module.projectilePuncher.description": "Atira de volta projeteis perto de você.",
-  
+
   "liquidbounce.module.autoPot.description": "Automaticamente usa um pot com a vida baixa.",
 
   "liquidbounce.module.keepChatAfterDeath.description": "Te deixa usar o chat na tela de respawn.",

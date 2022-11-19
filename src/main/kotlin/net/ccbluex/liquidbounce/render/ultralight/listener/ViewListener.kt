@@ -53,7 +53,7 @@ class ViewListener : UltralightViewListener {
      *
      * @param title The new page title
      */
-    override fun onChangeTitle(title: String) { }
+    override fun onChangeTitle(title: String) {}
 
     /**
      * Called by Ultralight when the view URL changes.
@@ -69,7 +69,7 @@ class ViewListener : UltralightViewListener {
      *
      * @param tooltip The new page tooltip
      */
-    override fun onChangeTooltip(tooltip: String) { }
+    override fun onChangeTooltip(tooltip: String) {}
 
     /**
      * Called by Ultralight when the cursor changes. Ultralight supports a lot of cursors, but currently not a custom
@@ -98,7 +98,7 @@ class ViewListener : UltralightViewListener {
         message: String,
         lineNumber: Long,
         columnNumber: Long,
-        sourceId: String
+        sourceId: String,
     ) {
         logger.info("View message: [${source.name}/${level.name}] $sourceId:$lineNumber:$columnNumber: $message")
     }
@@ -119,7 +119,7 @@ class ViewListener : UltralightViewListener {
         openerUrl: String,
         targetUrl: String,
         isPopup: Boolean,
-        popupRect: IntRect
+        popupRect: IntRect,
     ): UltralightView? {
         // Returning null will stop Ultralight from further handling the request, ignoring it altogether
         return null
