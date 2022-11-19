@@ -69,7 +69,7 @@ object ModuleIgnite : Module("Ignite", Category.WORLD) {
 
             val currentTarget = updateTarget(pos, true) ?: continue
 
-            val rotation = currentTarget.rotation.fixedSensitivity() ?: continue
+            val rotation = currentTarget.rotation.fixedSensitivity()
             val rayTraceResult = raycast(4.5, rotation) ?: return@repeatable
 
             if (rayTraceResult.type != HitResult.Type.BLOCK) {

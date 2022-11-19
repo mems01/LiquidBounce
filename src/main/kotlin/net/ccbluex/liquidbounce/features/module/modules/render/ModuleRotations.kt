@@ -45,7 +45,7 @@ object ModuleRotations : Module("Rotations", Category.RENDER) {
             return@handler
         }
 
-        val serverRotation = RotationManager.serverRotation ?: return@handler
+        val serverRotation = RotationManager.serverRotation
 
         val vertexFormat = PositionColorVertexFormat()
 

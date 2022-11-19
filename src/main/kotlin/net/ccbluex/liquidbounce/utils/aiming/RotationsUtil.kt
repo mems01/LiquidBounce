@@ -27,7 +27,6 @@ import net.ccbluex.liquidbounce.utils.kotlin.random
 import net.ccbluex.liquidbounce.utils.kotlin.step
 import net.minecraft.block.BlockState
 import net.minecraft.block.ShapeContext
-import net.minecraft.network.packet.c2s.play.PlayerMoveC2SPacket
 import net.minecraft.util.math.BlockPos
 import net.minecraft.util.math.Box
 import net.minecraft.util.math.MathHelper
@@ -56,7 +55,8 @@ class RotationsConfigurable : Configurable("Rotations") {
 object RotationManager : Listenable {
 
     var targetRotation: Rotation? = null
-    var serverRotation: Rotation? = null
+    val serverRotation: Rotation
+        get() = Rotation(mc.player?.lastYaw ?: 0f, mc.player?.lastPitch ?: 0f)
 
     // Current rotation
     var currentRotation: Rotation? = null
@@ -189,7 +189,7 @@ object RotationManager : Listenable {
         val playerRotation = mc.player?.rotation ?: return
 
         if (ticksUntilReset == 0) {
-            if (rotationDifference(currentRotation ?: serverRotation ?: return, playerRotation) <= angleLimit) {
+            if (rotationDifference(currentRotation ?: serverRotation, playerRotation) <= angleLimit) {
                 ticksUntilReset = -1
 
                 targetRotation = null
@@ -204,7 +204,7 @@ object RotationManager : Listenable {
                 return
             }
             currentRotation = limitAngleChange(
-                currentRotation ?: serverRotation ?: return, playerRotation, angleLimit, speed
+                currentRotation ?: serverRotation, playerRotation, angleLimit, speed
             ).fixedSensitivity()
             return
         }
@@ -221,7 +221,7 @@ object RotationManager : Listenable {
      * Calculate difference between the server rotation and your rotation
      */
     fun rotationDifference(rotation: Rotation): Double {
-        return rotationDifference(rotation, serverRotation ?: return 0.0)
+        return rotationDifference(rotation, serverRotation)
     }
 
     /**
@@ -275,26 +275,6 @@ object RotationManager : Listenable {
         // Update reset ticks
         if (ticksUntilReset > 0) {
             ticksUntilReset--
-        }
-    }
-
-    /**
-     * Update server rotations
-     */
-    val packetHandler = handler<PacketEvent> { event ->
-        val packet = event.packet
-
-        if (packet !is PlayerMoveC2SPacket || !packet.changesLook()) {
-            return@handler
-        }
-
-        serverRotation = Rotation(packet.yaw, packet.pitch)
-
-        // serverRotation must always match currentRotation post update
-        currentRotation?.let {
-            if (rotationDifference(it) != 0.0) {
-                serverRotation = it
-            }
         }
     }
 
