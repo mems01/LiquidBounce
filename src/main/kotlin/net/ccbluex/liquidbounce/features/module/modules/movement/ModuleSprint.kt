@@ -5,6 +5,12 @@ import net.ccbluex.liquidbounce.features.module.Module
 import net.ccbluex.liquidbounce.utils.aiming.RotationManager
 import net.minecraft.util.math.MathHelper
 
+/**
+ * Sprint module
+ *
+ * Sprints automatically.
+ */
+
 object ModuleSprint : Module("Sprint", Category.MOVEMENT) {
 
     val allDirections by boolean("AllDirections", false)
