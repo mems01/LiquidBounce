@@ -25,6 +25,7 @@ import net.ccbluex.liquidbounce.event.handler
 import net.ccbluex.liquidbounce.event.sequenceHandler
 import net.ccbluex.liquidbounce.features.module.Category
 import net.ccbluex.liquidbounce.features.module.Module
+import net.ccbluex.liquidbounce.utils.entity.moving
 import net.minecraft.client.util.InputUtil
 import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket
 
@@ -34,6 +35,8 @@ import net.minecraft.network.packet.c2s.play.PlayerInteractEntityC2SPacket
  * Increases knockback dealt to other entities.
  */
 object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
+
+    val sprintDelay by intRange("SprintDelay", 1..2, 1..20)
 
     val pressingSprintKey: Boolean
         get() = InputUtil.isKeyPressed(mc.window.handle, mc.options.sprintKey.boundKey.code)
@@ -50,7 +53,7 @@ object ModuleSuperKnockback : Module("SuperKnockback", Category.COMBAT) {
             return@sequenceHandler
         }
 
-        waitUntil { !player.isSprinting && player.isSprinting == player.lastSprinting }
+        waitUntil { !player.isSprinting && !player.lastSprinting && player.ticksSinceSprintingChanged >= sprintDelay.random() }
 
         if (!mc.options.sprintKey.isPressed && pressingSprintKey) {
             mc.options.sprintKey.isPressed = true
