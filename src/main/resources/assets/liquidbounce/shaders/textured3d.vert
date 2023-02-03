@@ -1,17 +1,17 @@
-#version 150
+#version 330
 
-in vec3 in_pos;
-in vec4 in_color;
-in vec2 in_uv;
+in vec3 inPos;
+in vec4 inColor;
+in vec2 inUv;
 
-out vec2 vertex_uv;
-out vec4 vertex_color;
+out vec2 vertexUv;
+out vec4 vertexColor;
 
-uniform mat4 mvp_matrix;
+uniform mat4 mvpMatrix;
 
 void main() {
-    vertex_color = in_color;
-    vertex_uv = in_uv;
+    vertexColor = inColor;
+    vertexUv = inUv;
 
-    gl_Position = mvp_matrix * vec4(in_pos, 1.0);
+    gl_Position = mvpMatrix * vec4(inPos, 1.0);
 }

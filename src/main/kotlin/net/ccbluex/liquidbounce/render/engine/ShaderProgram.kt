@@ -57,7 +57,7 @@ private class Shader(shaderType: ShaderType, source: String) {
     }
 
     /**
-     * Failsafe, if someone forgets to cleanup the shader
+     * Failsafe, if someone forgets to clean up the shader
      */
     protected fun finalize() {
         if (!wasDeleted) {
@@ -151,7 +151,7 @@ class ShaderProgram(vertexShaderSource: String, fragmentShaderSource: String) {
     }
 
     /**
-     * Failsafe, if someone forgets to cleanup the shader
+     * Failsafe, if someone forgets to clean up the shader
      */
     protected fun finalize() {
         if (!wasDeleted) {

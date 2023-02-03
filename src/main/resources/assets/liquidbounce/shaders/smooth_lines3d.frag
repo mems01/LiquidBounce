@@ -1,26 +1,25 @@
-#version 150
+#version 330
 
-in vec4 vertex_color;
-in vec2 vertex_line_center;
+in vec4 vertexColor;
+in vec2 vertexLineCenter;
 
-out vec4 frag_color;
+out vec4 fragColor;
 
-uniform float line_width;
+uniform float lineWidth;
 
-const float blend_factor = 1.5;
+const float blendFactor = 1.5;
 
 void main() {
-    vec4 col = vertex_color;
+    vec4 col = vertexColor;
 
-    float d = length(vertex_line_center - gl_FragCoord.xy);
-    float w = line_width;
+    float d = length(vertexLineCenter - gl_FragCoord.xy);
+    float w = lineWidth;
 
     // FIXME: This does not work
-
     /*if (d > w)
         col.w = 0;
     else
         col.w *= pow(float((w - d) / w), blend_factor);*/
 
-    frag_color = col;
+    fragColor = col;
 }

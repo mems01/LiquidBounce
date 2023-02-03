@@ -19,14 +19,14 @@
 
 package net.ccbluex.liquidbounce.render.engine
 
-import net.ccbluex.liquidbounce.render.engine.memory.AttributeType
 import net.ccbluex.liquidbounce.render.engine.memory.IndexBuffer
 import net.ccbluex.liquidbounce.render.engine.memory.VertexFormat
-import net.ccbluex.liquidbounce.render.engine.utils.popMVP
-import net.ccbluex.liquidbounce.render.engine.utils.pushMVP
 import net.ccbluex.liquidbounce.render.shaders.ShaderHandler
 import net.ccbluex.liquidbounce.utils.math.Mat4
-import org.lwjgl.opengl.*
+import org.lwjgl.opengl.GL12
+import org.lwjgl.opengl.GL20
+import org.lwjgl.opengl.GL31
+import org.lwjgl.opengl.GL33
 
 class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal val type: PrimitiveType, val shaderHandler: ShaderHandler<T>, private val indexBuffer: IndexBuffer? = null, private val perInstance: VertexFormat? = null, private val texture: Texture? = null, private val state: GlRenderState = GlRenderState(), private val shaderData: T? = null) : RenderTask() {
     var arrayBuffer: VertexBufferObject? = null
@@ -47,38 +47,11 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
             OpenGLLevel.OPENGL3_3, OpenGLLevel.OPENGL4_3 -> {
                 shaderHandler.bind(mvpMatrix, this.shaderData)
             }
-            else -> {
-                this.vertexFormat.components.forEach {
-                    GL11.glEnableClientState(it.attribInfo.attributeType.openGlClientState)
-                }
-
-                pushMVP(mvpMatrix)
-            }
         }
     }
 
     override fun draw(level: OpenGLLevel) {
         when (level) {
-            // Use Immediate mode for OpenGL 1.2.
-            OpenGLLevel.OPENGL1_2 -> {
-                // Upload if not done yet
-                this.uploadIfNotUploaded(level)
-
-                this.arrayBuffer!!.bind()
-
-                this.indexBuffer?.let {
-                    this.elementBuffer!!.bind()
-                }
-
-                this.vertexFormat.components.forEach {
-                    when (it.attribInfo.attributeType) {
-                        AttributeType.Position -> GL11.glVertexPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        AttributeType.Color -> GL11.glColorPointer(it.count, it.type.openGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        AttributeType.Texture -> GL11.glTexCoordPointer(it.count, it.type.legacyOpenGlEnum, this.vertexFormat.length, it.offset.toLong())
-                        else -> throw IllegalStateException()
-                    }
-                }
-            }
             // Use VBOs for later OpenGL versions.
             OpenGLLevel.OPENGL3_3, OpenGLLevel.OPENGL4_3 -> {
                 // Upload if not done yet
@@ -146,27 +119,25 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
         arrayBuffer.bind()
         arrayBuffer.putData(this.vertexFormat.bufferBuilder.buffer.slice())
 
-        if (level != OpenGLLevel.OPENGL1_2) {
-            val vao = if (perInstanceBuffer == null) {
-                VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false))
-            } else {
-                VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false), VertexAttribute(this.perInstance!!, perInstanceBuffer, true))
-            }
-
-            vao.bind()
-            vao.init()
-
-            // This line is required, without it, the driver dies
-            this.indexBuffer?.let {
-                elementBuffer!!.bind()
-            }
-
-            GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, 0)
-
-            vao.unbind()
-
-            this.vao = vao
+        val vao = if (perInstanceBuffer == null) {
+            VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false))
+        } else {
+            VertexAttributeObject(VertexAttribute(this.vertexFormat, arrayBuffer, false), VertexAttribute(this.perInstance!!, perInstanceBuffer, true))
         }
+
+        vao.bind()
+        vao.init()
+
+        // This line is required, without it, the driver dies
+        this.indexBuffer?.let {
+            elementBuffer!!.bind()
+        }
+
+        GL20.glBindBuffer(GL20.GL_ARRAY_BUFFER, 0)
+
+        vao.unbind()
+
+        this.vao = vao
 
         this.arrayBuffer = arrayBuffer
         this.perInstanceBuffer = perInstanceBuffer
@@ -180,17 +151,6 @@ class VertexFormatRenderTask<T>(private val vertexFormat: VertexFormat, internal
                 GL20.glUseProgram(0)
                 // Unbind VAOs, only needs to be done once during rendering
                 GL33.glBindVertexArray(0)
-            }
-            else -> {
-                this.vertexFormat.components.forEach {
-                    GL11.glDisableClientState(it.attribInfo.attributeType.openGlClientState)
-                }
-
-                this.arrayBuffer?.unbind()
-                this.perInstanceBuffer?.unbind()
-                this.elementBuffer?.unbind()
-
-                popMVP()
             }
         }
     }

@@ -1,11 +1,11 @@
-#version 150
+#version 330
 
-in vec2 vertex_uv;
-in vec4 vertex_color;
-out vec4 frag_color;
+in vec2 vertexUv;
+in vec4 vertexColor;
+out vec4 fragColor;
 
-uniform sampler2D current_texture;
+uniform sampler2D currentTexture;
 
 void main() {
-    frag_color = texture(current_texture, vertex_uv) * vertex_color;
+    fragColor = texture(currentTexture, vertexUv) * vertexColor;
 }

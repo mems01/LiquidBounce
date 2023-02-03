@@ -77,10 +77,10 @@ object ColoredPrimitiveShader : ShaderHandler<Nothing>() {
             resourceToString("/assets/liquidbounce/shaders/primitive3d.frag")
         )
 
-        shaderProgram.bindAttribLocation("in_pos", 0)
-        shaderProgram.bindAttribLocation("in_color", 1)
+        shaderProgram.bindAttribLocation("inPos", 0)
+        shaderProgram.bindAttribLocation("inColor", 1)
 
-        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvp_matrix")
+        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvpMatrix")
 
         ColoredPrimitiveShader.shaderProgram = shaderProgram
     }
@@ -107,12 +107,12 @@ object SmoothLineShader : ShaderHandler<SmoothLineShader.SmoothLineShaderUniform
             resourceToString("/assets/liquidbounce/shaders/smooth_lines3d.frag")
         )
 
-        shaderProgram.bindAttribLocation("in_pos", 0)
-        shaderProgram.bindAttribLocation("in_color", 1)
+        shaderProgram.bindAttribLocation("inPos", 0)
+        shaderProgram.bindAttribLocation("inColor", 1)
 
-        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvp_matrix")
-        lineWidthUniformLocation = shaderProgram.getUniformLocation("line_width")
-        viewportUniformLocation = shaderProgram.getUniformLocation("view_port")
+        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvpMatrix")
+        lineWidthUniformLocation = shaderProgram.getUniformLocation("lineWidth")
+        viewportUniformLocation = shaderProgram.getUniformLocation("viewPort")
 
         this.shaderProgram = shaderProgram
     }
@@ -145,11 +145,11 @@ object TexturedPrimitiveShader : ShaderHandler<Nothing>() {
             resourceToString("/assets/liquidbounce/shaders/textured3d.frag")
         )
 
-        shaderProgram.bindAttribLocation("in_pos", 0)
-        shaderProgram.bindAttribLocation("in_color", 1)
-        shaderProgram.bindAttribLocation("in_uv", 2)
+        shaderProgram.bindAttribLocation("inPos", 0)
+        shaderProgram.bindAttribLocation("inColor", 1)
+        shaderProgram.bindAttribLocation("inUv", 2)
 
-        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvp_matrix")
+        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvpMatrix")
 
         TexturedPrimitiveShader.shaderProgram = shaderProgram
     }
@@ -174,12 +174,12 @@ object InstancedColoredPrimitiveShader : ShaderHandler<Nothing>() {
             resourceToString("/assets/liquidbounce/shaders/primitive3d.frag")
         )
 
-        shaderProgram.bindAttribLocation("in_pos", 0)
-        shaderProgram.bindAttribLocation("in_color", 1)
-        shaderProgram.bindAttribLocation("instance_pos", 2)
-        shaderProgram.bindAttribLocation("instance_color", 3)
+        shaderProgram.bindAttribLocation("inPos", 0)
+        shaderProgram.bindAttribLocation("inColor", 1)
+        shaderProgram.bindAttribLocation("instancePos", 2)
+        shaderProgram.bindAttribLocation("instanceColor", 3)
 
-        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvp_matrix")
+        mvpMatrixUniformLocation = shaderProgram.getUniformLocation("mvpMatrix")
 
         InstancedColoredPrimitiveShader.shaderProgram = shaderProgram
     }
