@@ -107,11 +107,6 @@ public abstract class MixinPlayerEntity extends MixinLivingEntity {
             return entity.getYaw();
         }
 
-        currentRotation = currentRotation.fixedSensitivity();
-        if (currentRotation == null) {
-            return entity.getYaw();
-        }
-
         return currentRotation.getYaw();
     }
 
