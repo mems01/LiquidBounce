@@ -98,8 +98,10 @@ class KillAura : Module() {
     private val simulateCooldown = BoolValue("SimulateCooldown", false)
 
     // Range
-    private val rangeValue = FloatValue("Range", 3.7f, 1f, 8f)
-    private val throughWallsRangeValue = FloatValue("ThroughWallsRange", 3f, 0f, 8f)
+    private val attackRangeValue = FloatValue("Range", 3.7f, 1f, 8f)
+    private val rotationRangeValue = FloatValue("RotationRange", 3.7f, 1f, 8f)
+    private val throughWallsAttackRangeValue = FloatValue("ThroughWallsRange", 3f, 0f, 8f)
+    private val throughWallsRotationRangeValue = FloatValue("ThroughWallsRotationRange", 3f, 0f, 8f)
     private val rangeSprintReductionValue = FloatValue("RangeSprintReduction", 0f, 0f, 0.4f)
 
     // Modes
@@ -656,7 +658,7 @@ class KillAura : Module() {
             outborderValue.get() && !attackTimer.hasTimePassed(attackDelay / 2),
             randomCenterValue.get(),
             predictValue.get(),
-            mc.thePlayer.getDistanceToEntityBox(entity) < throughWallsRangeValue.get(),
+            mc.thePlayer.getDistanceToEntityBox(entity) < throughWallsRotationRangeValue.get(),
             maxRange
         ) ?: return false
 
@@ -687,7 +689,7 @@ class KillAura : Module() {
             return
         }
 
-        val reach = min(maxRange.toDouble(), mc.thePlayer.getDistanceToEntityBox(target!!)) + 1
+        val reach = min(attackRange.toDouble(), mc.thePlayer.getDistanceToEntityBox(target!!)) + 1
 
         if (raycastValue.get()) {
             val raycastedEntity = raycastEntity(reach) { entity ->
@@ -791,10 +793,13 @@ class KillAura : Module() {
      * Range
      */
     private val maxRange: Float
-        get() = max(rangeValue.get(), throughWallsRangeValue.get())
+        get() = max(rotationRangeValue.get(), throughWallsRotationRangeValue.get())
+
+    private val attackRange: Float
+        get() = max(attackRangeValue.get(), throughWallsAttackRangeValue.get())
 
     private fun getRange(entity: Entity) =
-        (if (mc.thePlayer.getDistanceToEntityBox(entity) >= throughWallsRangeValue.get()) rangeValue.get() else throughWallsRangeValue.get()) - if (mc.thePlayer.isSprinting) rangeSprintReductionValue.get() else 0F
+       (if (mc.thePlayer.getDistanceToEntityBox(entity) >= throughWallsRotationRangeValue.get()) rotationRangeValue.get() else throughWallsRotationRangeValue.get()) - if (mc.thePlayer.isSprinting) rangeSprintReductionValue.get() else 0F
 
     /**
      * HUD Tag
